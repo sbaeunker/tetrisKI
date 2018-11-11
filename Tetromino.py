@@ -21,9 +21,23 @@ class Tetromino:
     
     # Konstruktor für das Tetromino
     # @param1: kind ist die Art des Tetromino (0-4 und None). None bedeutet es wird ein zufälliges Tetromino erzeugt
+    # @param2: color ist die Farbe als rgb-Array die der Tetromino bekommen soll. Bei None wird eine Artspezifische Farbe zugewiesen
     def __init__(self, kind, color):
         if kind is None:
             kind = random.randint(0,4)
+        if color is None:
+            if kind == 0:
+                color = (255,0,0)
+            elif kind == 1:
+                color = (0,255,0)
+            elif kind == 2:
+                color = (0,0,255)
+            elif kind == 3:
+                color = (125,125,0)
+            elif kind == 4:
+                color = (0,125,125)
+
+            
         self.color = color # color sind ja bei allen blöcken gleich und hängt eigentlich vom kind ab
         self.__kind = kind
         self.__createTetromino(kind,color)

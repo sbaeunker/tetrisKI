@@ -72,7 +72,7 @@ def drawTetromino(screen, tetromino):
     rects = [] #performance
     positions = tetromino.getPositions()
     for i in range(4):
-        rects.append(drawBlock(screen, positions[0][i],positions[1][i] ,  COLOR_ONE ))
+        rects.append(drawBlock(screen, positions[0][i],positions[1][i] ,  tetromino.color ))
     
 def fillOldPosition(screen, tetromino):
     rects = [] #performance
@@ -97,7 +97,7 @@ def tetrominoMerge(tetromino,screen):
     global spielfeld
     positions = tetromino.getPositions()
     for i in range(4):
-        spielfeld[positions[0][i]][positions[1][i]] = tetromino.color   
+        spielfeld[positions[0][i]][positions[1][i]] = 1 
     if isLineCompleted(np.unique(positions[1])):
         fillBackground(screen) 
         
@@ -174,7 +174,7 @@ def main():
     pygame.display.set_caption("Tetris Game")
     pygame.mouse.set_visible(1)
     # Wiederholt Taste gedrückt senden, auch wenn die Taste noch nicht losgelassen wurde
-    pygame.key.set_repeat(1, 30)
+    pygame.key.set_repeat(100, 30)
 
     # Clock-Objekt erstellen, das wir benötigen, um die Framerate zu begrenzen.
     clock = pygame.time.Clock()
@@ -199,7 +199,7 @@ def main():
 
 
     tetrominoKind = None
-    tetrominoColor = 1
+    tetrominoColor = None
     # Erzeugt ein zufälliges Tetromino (tetrominoKind = None) mit der Farbe 1 (tetrominoColor = 1)
     t = Tetromino.Tetromino(tetrominoKind,tetrominoColor)
     
@@ -210,8 +210,6 @@ def main():
     actionMove = 0 # 0 = noAction , 1= links, 2 = rechts, 3 = unten, 4= dropdown
     actionRotate =0 # 0 = noAction ,
     while running:
-        
-
         # Alle aufgelaufenen Events holen und abarbeiten.
         for event in pygame.event.get():
             # Spiel beenden, wenn wir ein QUIT-Event finden.

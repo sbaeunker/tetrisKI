@@ -1,6 +1,6 @@
 Simon
-Tetromino Arten haben ihre Eigenen Farben
-Fehlende Tetromino Arten Einfügen
+Tetromino Arten haben ihre Eigenen Farben	: Ist erledigt. Tetromino.color ist jetzt ein rgb array
+Fehlende Tetromino Arten Einfügen	:	Sollen wir wirklich noch mehr Arten einführen?
 
 
 Stefan:
