@@ -17,14 +17,32 @@ class Tetromino:
     # mit x von links nach rechts
     # mit y von unten nach oben
     
+    
+    
     # Konstruktor für das Tetromino
     # @param1: kind ist die Art des Tetromino (0-4 und None). None bedeutet es wird ein zufälliges Tetromino erzeugt
     def __init__(self, kind, color):
         if kind is None:
             kind = random.randint(0,4)
-        
+        self.color = color # color sind ja bei allen blöcken gleich und hängt eigentlich vom kind ab
         self.__kind = kind
         self.__createTetromino(kind,color)
+        
+    def moveDown(self):
+        self.__posY=self.__posY+1
+        
+    def moveRight(self):
+        self.__posX=self.__posX+1
+        
+    def moveLeft(self):
+        self.__posX=self.__posX-1
+    
+    def getPositions(self):
+        relX, relY = np.where(self.pixels != 0)
+        absX = relX+self.__posX
+        absY = relY+self.__posY
+        absolutePositions = np.vstack((absX, absY)) 
+        return absolutePositions
     
     # Rotiert das Objekt und gibt das Array mit Höhen und Breitenangaben zurück
     # @param1: Anzahl der Drehungen (>0 im Uhrzeigersinn; <0 gegen den Uhrzeigersinn)
@@ -35,17 +53,23 @@ class Tetromino:
             axes = (0,1)
         self.pixels = np.rot90(self.pixels,steps,axes)
         
-    def __createTetromino(self, kind, color):       
+    def __createTetromino(self, kind, color):  
+        #Klassenvariable für position im Feld. Startposition oben in der Mitte
+        self.__posX =  5
+        self.__posY = 1
+        
         self.__height = 3
         self.__width = 3
         self.pixels = np.zeros((self.__height ,self.__width))
         if kind == 0:
-            self.pixels[0][2] = self.pixels[1][2] = self.pixels[2][2] = self.pixels[1][1] = color
+            self.pixels[0][2] = self.pixels[1][2] = self.pixels[2][2] = self.pixels[1][1] = 1
         elif kind == 1:
-            self.pixels[1][0] = self.pixels[1][1] = self.pixels[1][2] = self.pixels[2][0] = color
+            self.pixels[1][0] = self.pixels[1][1] = self.pixels[1][2] = self.pixels[2][0] = 1
         elif kind == 2:
-            self.pixels[0][0] = self.pixels[1][0] = self.pixels[1][1] = self.pixels[1][2] = color
+            self.pixels[0][0] = self.pixels[1][0] = self.pixels[1][1] = self.pixels[1][2] = 1
         elif kind == 3:
-            self.pixels[0][1] = self.pixels[1][1] = self.pixels[1][2] = self.pixels[2][2] = color
+            self.pixels[0][1] = self.pixels[1][1] = self.pixels[1][2] = self.pixels[2][2] = 1
         elif kind == 4:
-            self.pixels[0][2] = self.pixels[1][2] = self.pixels[1][1] = self.pixels[2][1] = color
+            self.pixels[0][2] = self.pixels[1][2] = self.pixels[1][1] = self.pixels[2][1] = 1
+            
+            #stefan: TODO: L BLOCK in die andere Richtung, QUadrat und vierer

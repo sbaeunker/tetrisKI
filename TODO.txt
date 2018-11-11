@@ -1,0 +1,15 @@
+Simon
+Tetromino Arten haben ihre Eigenen Farben
+Fehlende Tetromino Arten Einfügen
+
+
+Stefan:
+Tetromino Farben verarbeiten
+main.py als Klasse Spiel implementieren
+main.py Quellcode aufräumen
+main.py klassenvariablen anlegen
+main.py performance Optimieren:
+	nur bestimmte events zulassen
+	evtl pygame.event timer (keine ticks mehr)
+	beim vervollständigen einer Reihe nicht den ganzen Screen füllen
+	nur die aktualisierte screen elemente zeichnen
