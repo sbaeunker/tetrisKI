@@ -1,7 +1,5 @@
 Simon
-Tetromino Arten haben ihre Eigenen Farben	: Ist erledigt. Tetromino.color ist jetzt ein rgb array
-Fehlende Tetromino Arten Einfügen	:	Sollen wir wirklich noch mehr Arten einführen?
-
+	#Tetromino Arten haben ihre Eigenen Farben	: Ist erledigt. Tetromino.color ist jetzt ein rgb array
 
 Stefan:
 Tetromino Farben verarbeiten
@@ -16,3 +14,5 @@ main.py performance Optimieren:
 main.py Spielabbruch
 zwei reihen Gleichzeitig können nicht gelöscht
 wie können Trainingdaten gespeichert werden.
+
+BACKLOG	Fehlende Tetromino Arten Einfügen	:	Sollen wir wirklich noch mehr Arten einführen?

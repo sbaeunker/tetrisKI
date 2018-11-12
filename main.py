@@ -54,16 +54,7 @@ def drawField(screen,spielfeld):
         for j in range(shape[1]):
             if spielfeld[i][j]!=0:
                 kind=spielfeld[i][j]
-                if kind == 5:
-                    color = (255,0,0)
-                elif kind == 1:
-                    color = (0,255,0)
-                elif kind == 2:
-                    color = (0,0,255)
-                elif kind == 3:
-                    color = (125,125,0)
-                elif kind == 4:
-                    color = (0,125,125)
+                color = Tetromino.kindToColor(kind)
                 rects.append(drawBlock(screen, i , j , color))
      #drawing Gittermuster mit Rand     
     for i in range(1,shape[0]):
