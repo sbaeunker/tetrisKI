@@ -123,7 +123,7 @@ def isLineCompleted(newLineElements):
             spielfeld = np.delete(spielfeld, posy, axis = 1) # reihe loeschen
             emptyRow=np.zeros((10,1), dtype=int)
             spielfeld = np.hstack((emptyRow,spielfeld)) #oben neue leere Reihe
-            newLineElements[newLineElements>posy]=newLineElements[newLineElements>posy]-1
+            newLineElements[newLineElements<posy]=newLineElements[newLineElements<posy]-1
             reihen=reihen +1            
     
 
