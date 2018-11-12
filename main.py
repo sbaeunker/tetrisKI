@@ -36,7 +36,7 @@ FONT_MAIN = 0
 GAME_FRAMERATE = 60 #Max Framerate = TickRate 
 GAME_DROPTICK = 15 #Tetromino bewegt sich alle 15 Ticks nach unten. Bei 30 FPS entspr. 0.5 Sekunden
 GAME_ROTATETICK = 14 # Wie oft Spieler Inputs ausgewertet werden
-GAME_MOVETICK = 11
+GAME_MOVETICK = 9
 
 spielfeld=  np.zeros((10,18), dtype=int)
 reihen=0
@@ -53,7 +53,18 @@ def drawField(screen,spielfeld):
     for i in range(shape[0]):
         for j in range(shape[1]):
             if spielfeld[i][j]!=0:
-                rects.append(drawBlock(screen, i , j , COLOR_TWO))
+                kind=spielfeld[i][j]
+                if kind == 5:
+                    color = (255,0,0)
+                elif kind == 1:
+                    color = (0,255,0)
+                elif kind == 2:
+                    color = (0,0,255)
+                elif kind == 3:
+                    color = (125,125,0)
+                elif kind == 4:
+                    color = (0,125,125)
+                rects.append(drawBlock(screen, i , j , color))
      #drawing Gittermuster mit Rand     
     for i in range(1,shape[0]):
         rects.append(pygame.draw.lines(screen, COLOR_LINES, False, [(FIELD_OFFSETX+i*FIELD_BLOCKSIZE,FIELD_OFFSETY),(FIELD_OFFSETX+i*FIELD_BLOCKSIZE,FIELD_OFFSETY+FIELD_BLOCKSIZE*shape[1])], 1))
@@ -97,9 +108,9 @@ def tetrominoMerge(tetromino,screen):
     global spielfeld
     positions = tetromino.getPositions()
     for i in range(4):
-        spielfeld[positions[0][i]][positions[1][i]] = 1 
-    if isLineCompleted(np.unique(positions[1])):
-        fillBackground(screen) 
+        spielfeld[positions[0][i]][positions[1][i]] = tetromino.kind 
+    isLineCompleted(np.unique(positions[1]))
+    fillBackground(screen) 
         
 
     
@@ -112,9 +123,9 @@ def isLineCompleted(newLineElements):
             spielfeld = np.delete(spielfeld, posy, axis = 1) # reihe loeschen
             emptyRow=np.zeros((10,1), dtype=int)
             spielfeld = np.hstack((emptyRow,spielfeld)) #oben neue leere Reihe
-            reihen=reihen +1
-            return True
-    return False
+            newLineElements[newLineElements>posy]=newLineElements[newLineElements>posy]-1
+            reihen=reihen +1            
+    
 
     
 def draw(screen, tetromino, spielfeld, rects):

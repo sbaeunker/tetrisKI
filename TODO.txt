@@ -12,5 +12,7 @@ main.py performance Optimieren:
 	beim vervollständigen einer Reihe nicht den ganzen Screen füllen
 	nur die aktualisierte screen elemente zeichnen
 main.py Spielabbruch
+zwei reihen Gleichzeitig können nicht gelöscht
+wie können Trainingdaten gespeichert werden.
 
 BACKLOG	Fehlende Tetromino Arten Einfügen	:	Sollen wir wirklich noch mehr Arten einführen?

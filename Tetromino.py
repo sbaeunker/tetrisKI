@@ -24,9 +24,9 @@ class Tetromino:
     # @param2: color ist die Farbe als rgb-Array die der Tetromino bekommen soll. Bei None wird eine Artspezifische Farbe zugewiesen
     def __init__(self, kind, color):
         if kind is None:
-            kind = random.randint(0,4)
+            kind = random.randint(1,5)
         if color is None:
-            if kind == 0:
+            if kind == 5:
                 color = (255,0,0)
             elif kind == 1:
                 color = (0,255,0)
@@ -39,7 +39,7 @@ class Tetromino:
 
             
         self.color = color # color sind ja bei allen blöcken gleich und hängt eigentlich vom kind ab
-        self.__kind = kind
+        self.kind = kind
         self.__createTetromino(kind,color)
         
     def moveDown(self):
@@ -75,7 +75,7 @@ class Tetromino:
         self.__height = 3
         self.__width = 3
         self.pixels = np.zeros((self.__height ,self.__width))
-        if kind == 0:
+        if kind == 5:
             self.pixels[0][2] = self.pixels[1][2] = self.pixels[2][2] = self.pixels[1][1] = 1
         elif kind == 1:
             self.pixels[1][0] = self.pixels[1][1] = self.pixels[1][2] = self.pixels[2][0] = 1
