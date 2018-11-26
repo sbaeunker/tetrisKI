@@ -289,6 +289,7 @@ class Game:
         self.tetromino.start()
         self.checkLose()
         self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
+        fgps.figureOutTetrominoPosition(self.spielfeld,self.tetromino)
         
     def checkLose(self):
         positions=self.tetromino.getPositions()
