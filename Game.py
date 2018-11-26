@@ -81,9 +81,9 @@ class Game:
         self.tetrominoKind = None
         self.tetrominoColor = None
         # Erzeugt ein zufälliges Tetromino (tetrominoKind = None) mit der Farbe 1 (tetrominoColor = 1)
-        self.tetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
-        self.tetromino.start()
+        
         self.upcomingTetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
+        self.newTetromino()
         self.loop()
         self.quit()
         

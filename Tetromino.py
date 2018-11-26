@@ -66,6 +66,9 @@ class Tetromino:
         
     def moveDown(self):
         self.__posY=self.__posY+1
+    
+    def moveUp(self):
+        self.__posY=self.__posY-1
         
     def moveRight(self):
         self.__posX=self.__posX+1
