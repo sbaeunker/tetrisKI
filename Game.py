@@ -9,6 +9,7 @@ import numpy as np
 import pygame
 import Tetromino
 import copy
+import figureOutTetrominoPosition as fgps
 #import Spielfeld
  
 # Überprüfen, ob die optionalen Text- und Sound-Module geladen werden konnten.
