@@ -74,6 +74,7 @@ class Tetromino:
         absX = relX+self.__posX
         absY = relY+self.__posY
         absolutePositions = np.vstack((absX, absY)) 
+        #Array mit 0=>X-Position ; 1=>Y-Position
         return absolutePositions
     
     # Rotiert das Objekt und gibt das Array mit Höhen und Breitenangaben zurück
@@ -84,7 +85,13 @@ class Tetromino:
             steps = -steps
             axes = (0,1)
         self.pixels = np.rot90(self.pixels,steps,axes)
-        
+    
+    def copy(self):
+        t=Tetromino.Tetromino(self.kind,self.color)
+        t.__posY = self.__posY
+        t.__posX = self.__posX
+        t.pixels = np.copy(self.pixels)
+    
     def __createTetromino(self, kind, color):  
         #Klassenvariable für position im Feld. Startposition oben in der Mitte
         self.__posX =  5
