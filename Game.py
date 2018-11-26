@@ -34,6 +34,7 @@ class Game:
     COLOR_TWO = (0 ,212, 0)
 
     FONT_MAIN = 0
+    FONT_LOSE = 0
 
 
     GAME_FRAMERATE = 60 #Max Framerate = TickRate 
@@ -42,15 +43,16 @@ class Game:
     GAME_MOVETICK = 9
 
   
-    def __init__(self, screenHeight, screenWidths):
+    def __init__(self, screenHeight, screenWidth):
         self.spielfeld=  np.zeros((10,18), dtype=int)
         self.reihen=0
         self.rects = [] # alle veränderten Grafikelemente.Erhöht performance wenn nur diese gezeichnet werden.
-        
+        self.screenHeight = screenHeight
+        self.screenWidth = screenWidth
         # Initialisieren aller Pygame-Module und    
         # Fenster erstellen (wir bekommen eine Surface, die den Bildschirm repräsentiert).
         pygame.init()
-        self.screen = pygame.display.set_mode((screenHeight, screenWidths))
+        self.screen = pygame.display.set_mode((screenHeight, screenWidth))
         
         #bestimmte events erlauben fuer performance
         #pygame.event.set_allowed([pygame.QUIT, pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE])
@@ -58,6 +60,7 @@ class Game:
         # Titel des Fensters setzen, Mauszeiger nicht verstecken und Tastendrücke wiederholt senden.
         pygame.font.init()
         self.FONT_MAIN = pygame.font.SysFont("monospace", 15)
+        self.FONT_Lose = pygame.font.SysFont("monospace", 21)
         pygame.display.set_caption("Tetris Game")
         pygame.mouse.set_visible(1)
         # Wiederholt Taste gedrückt senden, auch wenn die Taste noch nicht losgelassen wurde
@@ -73,7 +76,7 @@ class Game:
         pygame.display.flip()        
         # Die Schleife, und damit unser Spiel, läuft solange running == True.
 
-    
+        self.lost= False
     
         self.tetrominoKind = None
         self.tetrominoColor = None
@@ -117,6 +120,9 @@ class Game:
                                 actionRotate = -1
                             if event.key == pygame.K_LEFT:
                                 actionMove=1
+                            if event.key == pygame.K_SPACE:
+                                if(self.lost):
+                                    self.lost = False
                             elif event.key == pygame.K_RIGHT:
                                 actionMove=2
           
@@ -153,20 +159,15 @@ class Game:
                         self.tetromino.rotate(actionRotate)                
                 self.draw()
                 actionRotate =0 # 0 = noAction ,
-                
-                
-                
-            # render text
-            labelReihen = self.FONT_MAIN.render("Reihen: "+str(self.reihen), 1, (255,255,0))
-            self.screen.blit(labelReihen, (200, 40))
-            
-            
+       
             #tick counts
-            __droptick = __droptick +1
-            __movetick = __movetick +1
-            __rotatetick = __rotatetick +1
-            self.clock.tick(self.GAME_FRAMERATE) # framerate begrenzen
-            
+            if(self.lost == False):
+                __droptick = __droptick +1
+                __movetick = __movetick +1
+                __rotatetick = __rotatetick +1
+                self.clock.tick(self.GAME_FRAMERATE) # framerate begrenzen
+            else:
+                self.restartScreen()
         #wend running
         
     def quit(self):
@@ -224,9 +225,7 @@ class Game:
             self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
         self.isLineCompleted(np.unique(positions[1]))
         self.fillBackground() 
-            
-    
-        
+                
     def isLineCompleted(self,newLineElements):
         #nur reihen mit neuen bloecken ueberpruefen
         for posy in newLineElements:
@@ -237,11 +236,15 @@ class Game:
                 newLineElements[newLineElements<posy]=newLineElements[newLineElements<posy]-1
                 self.reihen=self.reihen +1            
         
-    
-        
     def draw(self):
         #only Draw Changed
         #rects.append(fillBackground(screen))
+       
+        
+        # render text
+        labelReihen = self.FONT_MAIN.render("Reihen: "+str(self.reihen), 1, (255,255,0))
+        self.screen.blit(labelReihen, (200, 40))
+            
         self.drawTetromino(self.tetromino)
         self.drawTetromino(self.upcomingTetromino)
         self.drawField()
@@ -284,8 +287,34 @@ class Game:
     def newTetromino(self):
         self.tetromino= self.upcomingTetromino
         self.tetromino.start()
+        self.checkLose()
         self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
         
-        
-    
-   
+    def checkLose(self):
+        positions=self.tetromino.getPositions()
+        for i in range(4):
+            if self.spielfeld[positions[0][i]][positions[1][i]] != 0: #position Blocked
+                self.lost = True
+                
+    def restartScreen(self):
+        print("space to restart")
+        labelLose = self.FONT_MAIN.render("Game Over", 1, (255,255,0))
+        self.screen.blit(labelLose, ((self.screenHeight/2)-20, (self.screenWidth/2)-20))
+        pygame.display.update()
+        while self.lost:
+            # Alle aufgelaufenen Events holen und abarbeiten.
+            for event in pygame.event.get():
+                # Spiel beenden, wenn wir ein QUIT-Event finden.
+                if event.type == pygame.QUIT:
+                    self.quit()                   
+                # Wir interessieren uns auch für "Taste gedrückt"-Events.
+                if event.type == pygame.KEYDOWN:
+                    # Wenn Escape gedrückt wird, posten wir ein QUIT-Event in Pygames Event-Warteschlange.
+                    if event.key == pygame.K_ESCAPE:            
+                        pygame.event.post(pygame.event.Event(pygame.QUIT))
+                        self.quit()
+                    else:
+                        if event.key == pygame.K_SPACE:
+                            self.lost = False
+        self.__init__(self.screenHeight,self.screenWidth)   
+
