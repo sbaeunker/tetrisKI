@@ -78,6 +78,8 @@ class Game:
         self.tetrominoColor = None
         # Erzeugt ein zufälliges Tetromino (tetrominoKind = None) mit der Farbe 1 (tetrominoColor = 1)
         self.tetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
+        self.tetromino.start()
+        self.upcomingTetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
         self.loop()
         self.quit()
         
@@ -122,7 +124,7 @@ class Game:
                 if self.tetrominoDrop():            
                     self.tetromino.moveDown()
                 else:
-                    self.tetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)# neuer tetromino
+                    self.newTetromino()# neuer tetromino
                 self.draw()
             if __movetick % self.GAME_MOVETICK ==0:
                 if actionMove == 1:
@@ -138,7 +140,7 @@ class Game:
                         self.fillOldPosition()
                         self.tetromino.moveDown()    
                     else:
-                        self.tetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)# neuer tetromino
+                        self.newTetromino()# neuer tetromino
                 if actionMove == 4:
                     dropdown = 0
                 self.draw()
@@ -166,7 +168,7 @@ class Game:
             
         #wend running
         
-    def quit():
+    def quit(self):
         pygame.display.quit()
         pygame.quit()
     
@@ -193,10 +195,10 @@ class Game:
     def drawBlock(self,posx,posy,color):
         self.rects.append(pygame.draw.rect(self.screen, color, (self.FIELD_OFFSETX+self.FIELD_BLOCKSIZE*posx,self.FIELD_OFFSETY+self.FIELD_BLOCKSIZE*posy,self.FIELD_BLOCKSIZE,self.FIELD_BLOCKSIZE),0));
         
-    def drawTetromino(self):
-        positions = self.tetromino.getPositions()
+    def drawTetromino(self, tetromino):
+        positions = tetromino.getPositions()
         for i in range(4):
-           self.drawBlock( positions[0][i],positions[1][i] ,  self.tetromino.color )
+           self.drawBlock( positions[0][i],positions[1][i] ,  tetromino.color )
         
     def fillOldPosition(self):
         positions = self.tetromino.getPositions()
@@ -239,7 +241,8 @@ class Game:
     def draw(self):
         #only Draw Changed
         #rects.append(fillBackground(screen))
-        self.drawTetromino()
+        self.drawTetromino(self.tetromino)
+        self.drawTetromino(self.upcomingTetromino)
         self.drawField()
         #print([rect for rect in rects if rect is not None])
         pygame.display.update()
@@ -276,6 +279,12 @@ class Game:
             if self.spielfeld[positions[0][i]][positions[1][i]] != 0: #position Blocked
                 return False
         return True
+    
+    def newTetromino(self):
+        self.tetromino= self.upcomingTetromino
+        self.tetromino.start()
+        self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
+        
         
     
    
