@@ -80,8 +80,11 @@ class Game:
     
         self.tetrominoKind = None
         self.tetrominoColor = None
+
+        #Logging initialisieren
+        fgps.initLogging()
+
         # Erzeugt ein zufälliges Tetromino (tetrominoKind = None) mit der Farbe 1 (tetrominoColor = 1)
-        
         self.upcomingTetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
         self.newTetromino()
         self.loop()
@@ -173,6 +176,7 @@ class Game:
     def quit(self):
         pygame.display.quit()
         pygame.quit()
+        fgps.closeLogging()
     
     def drawField(self):
         shape = np.shape(self.spielfeld)

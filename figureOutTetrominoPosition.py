@@ -3,6 +3,19 @@
 
 import Tetromino
 import numpy as np
+import time
+
+f=None
+
+def initLogging():
+    global f
+    now = time.strftime("%c")
+    if f:
+        f.close()
+    f= open("saveGameData"+now+".txt","a+")
+
+def closeLogging():
+    f.close()
 
 def __checkPositionPossible(g, t):
     pos=t.getPositions()
@@ -36,16 +49,15 @@ def __figureOutTerominoPosition(g, t):
                 f.write("%d " % pos[x][y])
             f.write("\n")
 
-        
-f= open("saveGameData.txt","a+")
-
 def figureOutTetrominoPosition(gamepad, tetromino):
-    t = tetromino.copy()
-    
+    t =Tetromino.Tetromino(tetromino.kind,tetromino.color)
+    tetromino.copy(t)
+
     # Beschneide tetromino auf die kleinsmögliche breite und höhe
     # beschneide Null-zeilen und -Reihen
     #t = t[:,~np.all(r==0,axis=0)]
     #t = t[~np.all(r==0,axis=1)]
+    t.trim()
 
     f.write("GAMEPAD\n")
     for y in range(gamepad.shape[1]):
@@ -53,15 +65,15 @@ def figureOutTetrominoPosition(gamepad, tetromino):
             f.write("%d " % gamepad[x][y])
         f.write("\n")
     # suche für alle vier Orientierungen die Möglichkeiten heraus
+    t.setPosX(0)
+    
     for i in range(0,4):
-        t.__posX=0
-        print("HOSE")
-        print(t.getPositions())
+        
         for x in range(gamepad.shape[0]):
             # Beginne bei Positon links oben
-            t.__posY=0
-            
+            t.setPosY(0)
             __figureOutTerominoPosition(gamepad, t)
             t.moveRight()
         t.rotate(1)
+        t.setPosX(0)
         

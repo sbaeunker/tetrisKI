@@ -78,6 +78,7 @@ class Tetromino:
     
     def getPositions(self):
         relX, relY = np.where(self.pixels != 0)
+        print(id(self.__posX))
         absX = relX+self.__posX
         absY = relY+self.__posY
         absolutePositions = np.vstack((absX, absY)) 
@@ -93,12 +94,22 @@ class Tetromino:
             axes = (0,1)
         self.pixels = np.rot90(self.pixels,steps,axes)
     
-    def copy(self):
-        t=Tetromino(self.kind,self.color)
+    def copy(self,t):
         t.__posY = self.__posY
         t.__posX = self.__posX
         t.pixels = np.copy(self.pixels)
-        return t
+    
+    def setPosX(self,value):
+        self.__posX = value
+    
+    def trim(self):
+        # Beschneide tetromino auf die kleinsmögliche breite und höhe
+        # beschneide Null-zeilen und -Reihen
+        self.pixels = self.pixels[:,~np.all(self.pixels==0,axis=0)]
+        self.pixels = self.pixels[~np.all(self.pixels==0,axis=1)]
+
+    def setPosY(self,value):
+        self.__posY = value
     
     def __createTetromino(self, kind, color):  
         #Klassenvariable für position im Feld. Startposition oben in der Mitte
