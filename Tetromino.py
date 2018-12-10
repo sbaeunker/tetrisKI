@@ -119,19 +119,17 @@ class Tetromino:
         self.__height = 4
         self.__width = 3
         self.pixels = np.zeros((self.__height ,self.__width))
-        if kind == 1:
+        if kind == 1:#umgekehrtes L
             self.pixels[1][0] = self.pixels[1][1] = self.pixels[1][2] = self.pixels[2][0] = 1
-        elif kind == 2:
+        elif kind == 2:# L
             self.pixels[0][0] = self.pixels[1][0] = self.pixels[1][1] = self.pixels[1][2] = 1
-        elif kind == 3:
+        elif kind == 3:#Z
             self.pixels[0][1] = self.pixels[1][1] = self.pixels[1][2] = self.pixels[2][2] = 1
-        elif kind == 4:
+        elif kind == 4:#S
             self.pixels[0][2] = self.pixels[1][2] = self.pixels[1][1] = self.pixels[2][1] = 1
-        elif kind == 5:
+        elif kind == 5:#T
             self.pixels[0][2] = self.pixels[1][2] = self.pixels[2][2] = self.pixels[1][1] = 1
-        elif kind == 6:
+        elif kind == 6:#O
             self.pixels[0][0] = self.pixels[0][1] = self.pixels[1][0] = self.pixels[1][1] = 1
-        elif kind == 7:
+        elif kind == 7:#I
             self.pixels[0][0] = self.pixels[1][0] = self.pixels[2][0] = self.pixels[3][0] = 1
-            
-            #stefan: TODO: L BLOCK in die andere Richtung, QUadrat und vierer

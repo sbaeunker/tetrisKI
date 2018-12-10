@@ -21,4 +21,33 @@ class tetrisAgent:
         
     def __calcReward(self, gamepad):
     
-    
+    def __getActionSpaceSize(self, spielfeld, tetromino):
+         switch(tetromin.kind){#return Anzahl der Möglichkeiten
+                case 1:#umgekehrtes L
+                    return 34;#8+8+9+9
+                    break;
+                case 2:#L
+                    return 34;#8+8+9+9
+                    break;
+                case 3:#Z
+                    return 17;#8+9
+                    break;
+                case 4:#S
+                    return 17;#8+9
+                    break;
+                case 5:#T
+                    return 34;#8+8+9+9
+                    break;
+                case 6:#O
+                    return 9;#9
+                    break;
+                case 7:#I
+                    return 17; #10+7
+                    break;
+                }
+        
+    def __getActionSpace(self, spielfeld, tetromino):
+        size = __getActionSpaceSize(spielfeld, tetromino)
+        outputSpielfeld = [spielfeld]*size;
+        for i in range(size):
+            
