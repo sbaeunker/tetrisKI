@@ -9,7 +9,6 @@ import numpy as np
 import pygame
 import Tetromino
 import copy
-import figureOutTetrominoPosition as fgps
 #import Spielfeld
  
 # Überprüfen, ob die optionalen Text- und Sound-Module geladen werden konnten.
@@ -41,10 +40,13 @@ class Game:
     GAME_DROPTICK = 15 #Tetromino bewegt sich alle 15 Ticks nach unten. Bei 30 FPS entspr. 0.5 Sekunden
     GAME_ROTATETICK = 14 # Wie oft Spieler Inputs ausgewertet werden
     GAME_MOVETICK = 9
+    
+    GAME_WIDTH = 10
+    GAME_HEIGHT = 18
 
   
     def __init__(self, screenHeight, screenWidth):
-        self.spielfeld=  np.zeros((10,18), dtype=int)
+        self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
         self.reihen=0
         self.rects = [] # alle veränderten Grafikelemente.Erhöht performance wenn nur diese gezeichnet werden.
         self.screenHeight = screenHeight
@@ -80,9 +82,6 @@ class Game:
     
         self.tetrominoKind = None
         self.tetrominoColor = None
-
-        #Logging initialisieren
-        fgps.initLogging()
 
         # Erzeugt ein zufälliges Tetromino (tetrominoKind = None) mit der Farbe 1 (tetrominoColor = 1)
         self.upcomingTetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
@@ -176,7 +175,6 @@ class Game:
     def quit(self):
         pygame.display.quit()
         pygame.quit()
-        fgps.closeLogging()
     
     def drawField(self):
         shape = np.shape(self.spielfeld)
@@ -293,13 +291,26 @@ class Game:
         self.tetromino.start()
         self.checkLose()
         self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
-        fgps.figureOutTetrominoPosition(self.spielfeld,self.tetromino)
+        self.getGameOutline()
         
     def checkLose(self):
         positions=self.tetromino.getPositions()
         for i in range(4):
             if self.spielfeld[positions[0][i]][positions[1][i]] != 0: #position Blocked
                 self.lost = True
+    
+    # Die Funktion liefert die Kontur des Spielfeldes als Array zurück
+    # ArrayIndex ist von links nach rechts im Spielfeld aufsteigend ->
+    # ArrayWert ist die Höhe des höchsten belegten Feldes bei dem entsprechenden X-Wert; gezählt von unten
+    # Bsp: [0]=0,[1]=0,[2]=0,[3]=0,[4]=0,[5]=0,[6]=0,[7]=0,[8]=0,[9]=0 wenn noch kein Stein liegt
+    # Bsp: [0]=2,[1]=2,[2]=0,[3]=0,[4]=0,[5]=0,[6]=0,[7]=0,[8]=0,[9]=0 wenn das Quadrat links in der Ecke liegt
+    def getGamepadOutline(self):
+        outline = np.zeros(self.GAME_WIDTH, dtype=int)
+        for x in range(self.GAME_WIDTH):
+            for y in range(self.GAME_HEIGHT):
+                if self.spielfeld[x][self.GAME_HEIGHT-1-y] > 0:
+                    outline[x] = y+1
+        return outline
                 
     def restartScreen(self):
         print("space to restart")

@@ -78,7 +78,6 @@ class Tetromino:
     
     def getPositions(self):
         relX, relY = np.where(self.pixels != 0)
-        print(id(self.__posX))
         absX = relX+self.__posX
         absY = relY+self.__posY
         absolutePositions = np.vstack((absX, absY)) 
