@@ -9,6 +9,7 @@ import numpy as np
 import pygame
 import Tetromino
 import copy
+import tetrisAgent
 #import Spielfeld
  
 # Überprüfen, ob die optionalen Text- und Sound-Module geladen werden konnten.
@@ -46,6 +47,10 @@ class Game:
 
   
     def __init__(self, screenHeight, screenWidth):
+
+        tetrisAgent.tetrisAgent( 1, 4, 4, alpha=0.5, gamma=0.7, vareps=0.1)
+
+
         self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
         self.reihen=0
         self.rects = [] # alle veränderten Grafikelemente.Erhöht performance wenn nur diese gezeichnet werden.
@@ -291,7 +296,7 @@ class Game:
         self.tetromino.start()
         self.checkLose()
         self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
-        self.getGameOutline()
+        self.getGamepadOutline(3)
         
     def checkLose(self):
         positions=self.tetromino.getPositions()
@@ -300,16 +305,27 @@ class Game:
                 self.lost = True
     
     # Die Funktion liefert die Kontur des Spielfeldes als Array zurück
-    # ArrayIndex ist von links nach rechts im Spielfeld aufsteigend ->
-    # ArrayWert ist die Höhe des höchsten belegten Feldes bei dem entsprechenden X-Wert; gezählt von unten
-    # Bsp: [0]=0,[1]=0,[2]=0,[3]=0,[4]=0,[5]=0,[6]=0,[7]=0,[8]=0,[9]=0 wenn noch kein Stein liegt
-    # Bsp: [0]=2,[1]=2,[2]=0,[3]=0,[4]=0,[5]=0,[6]=0,[7]=0,[8]=0,[9]=0 wenn das Quadrat links in der Ecke liegt
-    def getGamepadOutline(self):
-        outline = np.zeros(self.GAME_WIDTH, dtype=int)
-        for x in range(self.GAME_WIDTH):
+    # ArrayIndex ist von links nach rechts im Spielfeld aufsteigend
+    def getGamepadOutline(self,maxDiff):
+        outline = np.zeros(self.GAME_WIDTH-1, dtype=int)
+        sizeBefore = 0
+        for y in range(self.GAME_HEIGHT):
+            if self.spielfeld[0][self.GAME_HEIGHT-1-y] > 0:
+                sizeBefore = y+1
+
+        for x in range(1,self.GAME_WIDTH):
+            sizeCurr = 0
             for y in range(self.GAME_HEIGHT):
                 if self.spielfeld[x][self.GAME_HEIGHT-1-y] > 0:
-                    outline[x] = y+1
+                    sizeCurr = y+1
+            diff = sizeCurr - sizeBefore
+            if abs(diff) > maxDiff:
+                if diff < 0:
+                    diff = -maxDiff
+                else:
+                    diff = maxDiff
+            outline[x-1] = diff
+            sizeBefore = sizeCurr
         return outline
                 
     def restartScreen(self):
