@@ -46,11 +46,11 @@ class Game:
     GAME_HEIGHT = 18
 
   
-    def __init__(self, screenHeight, screenWidth):
-
+    def __init__(self, screenHeight, screenWidth, mode):
+        
         tetrisAgent.tetrisAgent( 1, 4, 4, alpha=0.5, gamma=0.7, vareps=0.1)
 
-
+        self.mode = mode
         self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
         self.reihen=0
         self.rects = [] # alle veränderten Grafikelemente.Erhöht performance wenn nur diese gezeichnet werden.
@@ -96,91 +96,111 @@ class Game:
         
     def loop(self):
         running = True
-        __droptick = 0 #tick counter für fallenden Tetromino
-        __movetick = 0#tick counter für Spieler Input
-        __rotatetick = 0#tick counter für Spieler Input
+        self.__droptick = 0 #tick counter für fallenden Tetromino
+        self.__movetick = 0#tick counter für Spieler Input
+        self.__rotatetick = 0#tick counter für Spieler Input
         
-        actionMove = 0 # 0 = noAction , 1= links, 2 = rechts, 3 = unten, 4= dropdown
-        actionRotate =0 # 0 = noAction ,
+        self.actionMove = 0 # 0 = noAction , 1= links, 2 = rechts, 3 = unten, 4= dropdown
+        self.actionRotate =0 # 0 = noAction ,
         while running:
-            # Alle aufgelaufenen Events holen und abarbeiten.
-            for event in pygame.event.get():
+            # Alle aufgelaufenen Events holen und abarbeiten.          
+            self.handleEvents()
+            if self.mode == 0: #play mode
+                self.handleGameTicks()
+                
+            if self.mode == 2: #custom test modes            
+                if self.actionMove != 0:
+                    cin = input("actionIndex: ")
+                    self.spielfeld = self.__applyAction(self.spielfeld, self.tetromino ,int(float(cin)))
+                    self.fillBackground() 
+                    self.fillOldPosition()
+                    self.draw()
+                    self.newTetromino()
+                    
+                    #self.actionMove = 0
+                    
+            if(self.lost == False):
+                self.__droptick = self.__droptick +1
+                self.__movetick = self.__movetick +1
+                self.__rotatetick = self.__rotatetick +1
+                self.clock.tick(self.GAME_FRAMERATE) # framerate begrenzen
+            else:
+                self.restartScreen()
+                
+        
+    def quit(self):
+        pygame.display.quit()
+        pygame.quit()
+    
+    def handleGameTicks(self):
+        if self.__droptick % self.GAME_DROPTICK == 0:
+            self.fillOldPosition()
+            if self.tetrominoDrop():            
+                self.tetromino.moveDown()
+            else:
+                self.newTetromino()# neuer tetromino
+                self.draw()
+        if self.__movetick % self.GAME_MOVETICK ==0:
+            if self.actionMove == 1:
+                if self.canMoveLeft():
+                    self.fillOldPosition()
+                    self.tetromino.moveLeft()             
+            if self.actionMove == 2:
+                if self.canMoveRight():
+                    self.fillOldPosition()
+                    self.tetromino.moveRight()
+            if self.actionMove == 3:
+                if self.tetrominoDrop():
+                    self.fillOldPosition()
+                    self.tetromino.moveDown()    
+                else:
+                    self.newTetromino()# neuer tetromino
+            if self.actionMove == 4:
+                self.dropdown = 0
+            self.draw()
+            self.actionMove = 0 # 0 = noAction , 1= links, 2 = rechts, 3 = unten, 4= dropdown
+        if self.__rotatetick % self.GAME_ROTATETICK == 0:      
+            if self.actionRotate != 0:
+                if self.canRotate():
+                    self.fillOldPosition()
+                    self.tetromino.rotate(self.actionRotate)                
+                    self.draw()
+                    self.actionRotate =0 # 0 = noAction ,
+           
+                #tick counts
+        
+                    
+    def handleEvents(self):
+        for event in pygame.event.get():
                 # Spiel beenden, wenn wir ein QUIT-Event finden.
                 if event.type == pygame.QUIT:
-                    running = False
+                    self.running = False
                     self.quit()
                     
                 # Wir interessieren uns auch für "Taste gedrückt"-Events.
                 if event.type == pygame.KEYDOWN:
                     # Wenn Escape gedrückt wird, posten wir ein QUIT-Event in Pygames Event-Warteschlange.
                     if event.key == pygame.K_ESCAPE:
-                        running = False               
+                        self.running = False               
                         pygame.event.post(pygame.event.Event(pygame.QUIT))
                         self.quit()
                     else:
                         if event.key == pygame.K_SPACE:
-                            actionMove = 4
+                            self.actionMove = 4
+                            self.mode = 2
                         else:                   
                             if event.key == pygame.K_DOWN:
-                                actionMove=3
+                                self.actionMove=3
                             if event.key == pygame.K_UP:
-                                actionRotate = -1
+                                self.actionRotate = -1
                             if event.key == pygame.K_LEFT:
-                                actionMove=1
+                                self.actionMove=1
                             if event.key == pygame.K_SPACE:
                                 if(self.lost):
                                     self.lost = False
                             elif event.key == pygame.K_RIGHT:
-                                actionMove=2
-          
-            if __droptick % self.GAME_DROPTICK == 0:
-                self.fillOldPosition()
-                if self.tetrominoDrop():            
-                    self.tetromino.moveDown()
-                else:
-                    self.newTetromino()# neuer tetromino
-                self.draw()
-            if __movetick % self.GAME_MOVETICK ==0:
-                if actionMove == 1:
-                    if self.canMoveLeft():
-                        self.fillOldPosition()
-                        self.tetromino.moveLeft()             
-                if actionMove == 2:
-                    if self.canMoveRight():
-                        self.fillOldPosition()
-                        self.tetromino.moveRight()
-                if actionMove == 3:
-                    if self.tetrominoDrop():
-                        self.fillOldPosition()
-                        self.tetromino.moveDown()    
-                    else:
-                        self.newTetromino()# neuer tetromino
-                if actionMove == 4:
-                    dropdown = 0
-                self.draw()
-                actionMove = 0 # 0 = noAction , 1= links, 2 = rechts, 3 = unten, 4= dropdown
-            if __rotatetick % self.GAME_ROTATETICK == 0:      
-                if actionRotate != 0:
-                    if self.canRotate():
-                        self.fillOldPosition()
-                        self.tetromino.rotate(actionRotate)                
-                self.draw()
-                actionRotate =0 # 0 = noAction ,
-       
-            #tick counts
-            if(self.lost == False):
-                __droptick = __droptick +1
-                __movetick = __movetick +1
-                __rotatetick = __rotatetick +1
-                self.clock.tick(self.GAME_FRAMERATE) # framerate begrenzen
-            else:
-                self.restartScreen()
-        #wend running
-        
-    def quit(self):
-        pygame.display.quit()
-        pygame.quit()
-    
+                                self.actionMove=2
+                                
     def drawField(self):
         shape = np.shape(self.spielfeld)
         # drawing Blocks
@@ -307,6 +327,16 @@ class Game:
     # Die Funktion liefert die Kontur des Spielfeldes als Array zurück
     # ArrayIndex ist von links nach rechts im Spielfeld aufsteigend
     def getGamepadOutline(self,maxDiff):
+        
+        #y= self.spielfeld!=0 #
+        #contour = np.zeros((y.shape[0],1), dtype=int) 
+        #for col in range(y.shape[0]): # maximal 4 loops
+        #    if np.where(y[:][col])[:][0].size == 0:
+        #        contour[col][0] = 0
+        #    else:
+        #        contour[col][0] = self.GAME_HEIGHT - min(np.where(y[:][col])[:][0])
+        #return contour
+    
         outline = np.zeros(self.GAME_WIDTH-1, dtype=int)
         sizeBefore = 0
         for y in range(self.GAME_HEIGHT):
@@ -348,5 +378,51 @@ class Game:
                     else:
                         if event.key == pygame.K_SPACE:
                             self.lost = False
-        self.__init__(self.screenHeight,self.screenWidth)   
+        self.__init__(self.screenHeight,self.screenWidth,self.mode)   
 
+
+
+    def __applyAction(self, spielfeld, tetromino , actionIndex):
+		#es wäre schneller eine Liste aller möglichen Aktionen zu haben als, diese in jedem schritt neu auszurechnen.
+        rotation=0
+        positions = np.array(tetromino.getPositions());
+        #nur relative positionen
+        positions[:][0]-=min(positions[:][0])
+        positions[:][1]-=min(positions[:][1])
+        #maximale verschiebungen bei aktueller rotation
+        possibilities = spielfeld.shape[0]-max(positions[:][0])
+        print(possibilities)
+        while actionIndex>possibilities-1: # maximal 3 durchläufe
+            actionIndex= actionIndex - possibilities           
+            rotation = rotation + 1
+            print("rotating")
+            if rotation>3:
+                return -1
+            tetromino.rotate(-1)
+            positions = np.array(tetromino.getPositions());
+            positions[:][0] = positions[:][0] - min(positions[:][0])
+            positions[:][1] = positions[:][1] - min(positions[:][1])
+            #maximale verschiebungen bei aktueller rotation
+            possibilities = spielfeld.shape[0]-max(positions[:][0])
+            
+        #alle Rotationen zuEnde jetzt ist actionindex die x verschiebung
+         
+        y= spielfeld[np.unique(positions[:][0] + actionIndex )][:]!=0 # y Koordinaten != 0
+        contour = np.zeros((y.shape[0],1), dtype=int) 
+        for col in range(y.shape[0]): # maximal 4 loops
+            #check if row is empty
+            if np.where(y[:][col])[:][0].size == 0:
+                contour[col][0] = 0
+            else:
+                contour[col][0] = self.GAME_HEIGHT - min(np.where(y[:][col])[:][0])
+            #print(  positions[1][np.where( positions[:][0] == col)[:][0]]  )
+            contour[col][0] += max(positions[1][np.where( positions[:][0] == col)[:][0]]) #- min(positions[1][np.where( positions[:][0] == col)[:][0]]) # unterste steine welche aufliegen werden
+        
+        #print(max(contour))
+        #print(positions)
+        positions[:][0] = positions[:][0] + actionIndex     #  abschließende x Koordinaten
+        positions[:][1] = positions[:][1] + self.GAME_HEIGHT - max(contour) - 1 # abschließende auflage höhe.
+        for i in range(4):
+            self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
+        
+        return spielfeld

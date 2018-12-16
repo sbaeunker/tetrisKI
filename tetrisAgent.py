@@ -39,46 +39,58 @@ class tetrisAgent:
             a = np.argmax(localQ)
         return a
 
-    def learn(self,contourBefore,contourAfter, revard, lastAction):
+    def learn(self,contourBefore,contourAfter, reward, lastAction):
         localQ = self.hatQ[statusToQHatIdx(contourAfter),:]
         self.hatQ[statusToQHatIdx(contourBefore),lastAction] = r + self.gamma * np.max(localQs)
         a = np.argmax(localQ)
 
-    def getRevard(self, deletedLines, contourBefore, contourAfter):
-        revard = -1
-        revard = revard + deletedLines * 1000
-        revard = revard + ( np.sum(np.absolute(contourBefore)) - np.sum(np.absolute(contourAfter)))
-        return revard
+    def getReward(self, deletedLines, contourBefore, contourAfter):
+        reward = -1
+        reward = reward + deletedLines * 1000
+        reward = reward + ( np.sum(np.absolute(contourBefore)) - np.sum(np.absolute(contourAfter)))
+        return reward
         
     #def __calcReward(self, gamepad):
     
-    # def __getActionSpaceSize(self, spielfeld, tetromino):
-    #      switch(tetromin.kind){#return Anzahl der Möglichkeiten
-    #             case 1:#umgekehrtes L
-    #                 return 34;#8+8+9+9
-    #                 break;
-    #             case 2:#L
-    #                 return 34;#8+8+9+9
-    #                 break;
-    #             case 3:#Z
-    #                 return 17;#8+9
-    #                 break;
-    #             case 4:#S
-    #                 return 17;#8+9
-    #                 break;
-    #             case 5:#T
-    #                 return 34;#8+8+9+9
-    #                 break;
-    #             case 6:#O
-    #                 return 9;#9
-    #                 break;
-    #             case 7:#I
-    #                 return 17; #10+7
-    #                 break;
-    #             }
+    
         
-    # def __getActionSpace(self, spielfeld, tetromino):
-    #     size = __getActionSpaceSize(spielfeld, tetromino)
-    #     outputSpielfeld = [spielfeld]*size;
-    #     for i in range(size):
+    
+        
+        
+        # xKoordinaten von den unteren blöcken des Tetromino
+        
+        
+   #     if(tetromino.kind == 1): #umgekehrtes L
+	#		if(actionIndex>34):#nur 34 Möglichkeiten 8+8+9+9
+	#			return -1 
+	#		if(actionIndex<=8): 
+	#			tetrominoPositions = np.array([[0,1,1,1][0,0,1,2]])
+	#			return
+	#		else if(actionIndex<=16):
+	#			tetrominoPositions = np.array([[0,0,0,1][0,1,2,2]])
+	#			return
+	#		else if(actionIndex<=25):
+	#			tetrominoPositions = np.array([[0,1,1,1][0,1,2,3]])
+	#			return
+	#		else if(actionIndex<=34):
+	#			tetrominoPositions = np.array([[0,1,1,1][0,1,2,3]])
+	#			return
+	#	else if(tetromino.kind == 2): #L
+	#		if(actionIndex>34):#nur 34 Möglichkeiten 8+8+9+9
+	#			return -1 
+	#	else if(tetromino.kind == 3): #Z
+	#		if(actionIndex>34):#nur 34 Möglichkeiten 8+9
+	#			return -1 
+	#	else if(tetromino.kind == 4): #S
+	#		if(actionIndex>34):#nur 34 Möglichkeiten 8+9
+	#			return -1 
+	#	else if(tetromino.kind == 5): #T
+	#		if(actionIndex>34):#nur 34 Möglichkeiten 8+8+9+9
+	#			return -1 
+	#	else if(tetromino.kind == 6): #O
+	#		if(actionIndex>34):#nur 34 Möglichkeiten 9
+	#			return -1 
+	#	else if(tetromino.kind == 7): #I
+	#		if(actionIndex>34):#nur 34 Möglichkeiten 10+7
+	#			return -1 		       
             
