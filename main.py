@@ -8,7 +8,7 @@ Created on Thu Nov 22 11:20:10 2018
 import Game
 
 def main():
-    game = Game.Game(800,600)
+    game = Game.Game(800,600,0)
     
     # Überprüfen, ob dieses Modul als Programm läuft und nicht in einem anderen Modul importiert wird.
 if __name__ == '__main__':

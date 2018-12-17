@@ -60,9 +60,9 @@ class Tetromino:
         self.kind = kind
         self.__createTetromino(kind,color)
         
-    def start(self):
-        self.__posX=5
-        self.__posY=0
+    def start(self, x, y):
+        self.__posX=x
+        self.__posY=y
         
     def moveDown(self):
         self.__posY=self.__posY+1
@@ -112,7 +112,7 @@ class Tetromino:
     
     def __createTetromino(self, kind, color):  
         #Klassenvariable für position im Feld. Startposition oben in der Mitte
-        self.__posX = 11
+        self.__posX = 7
         self.__posY = 2
         
         self.__height = 4

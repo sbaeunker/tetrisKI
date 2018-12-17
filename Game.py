@@ -10,6 +10,7 @@ import pygame
 import Tetromino
 import copy
 import tetrisAgent
+import time
 #import Spielfeld
  
 # Überprüfen, ob die optionalen Text- und Sound-Module geladen werden konnten.
@@ -42,14 +43,16 @@ class Game:
     GAME_ROTATETICK = 14 # Wie oft Spieler Inputs ausgewertet werden
     GAME_MOVETICK = 9
     
-    GAME_WIDTH = 10
+    GAME_WIDTH = 6
     GAME_HEIGHT = 18
+    
+    TETROMINO_AMOUNT = 1
 
   
     def __init__(self, screenHeight, screenWidth, mode):
         
-        tetrisAgent.tetrisAgent( 1, 4, 4, alpha=0.5, gamma=0.7, vareps=0.1)
-
+        self.tetrisAgent = tetrisAgent.tetrisAgent( 3, self.TETROMINO_AMOUNT, self.GAME_WIDTH, 18, alpha=0.5, gamma=0.7, vareps=0.1)
+        self.drawingMode = 1
         self.mode = mode
         self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
         self.reihen=0
@@ -85,7 +88,7 @@ class Game:
 
         self.lost= False
     
-        self.tetrominoKind = None
+        self.tetrominoKind = 6
         self.tetrominoColor = None
 
         # Erzeugt ein zufälliges Tetromino (tetrominoKind = None) mit der Farbe 1 (tetrominoColor = 1)
@@ -110,12 +113,29 @@ class Game:
                 
             if self.mode == 2: #custom test modes            
                 if self.actionMove != 0:
-                    cin = input("actionIndex: ")
+                    #cin = input("actionIndex: ")
+                    contourBefore = self.getGamepadOutline(3)
+                    cin = self.tetrisAgent.chooseAction(self.getGamepadOutline(3), self.tetromino.kind)
                     self.spielfeld = self.__applyAction(self.spielfeld, self.tetromino ,int(float(cin)))
-                    self.fillBackground() 
-                    self.fillOldPosition()
-                    self.draw()
+                    deletedLines = self.isLineCompleted(np.array(range(18)))
+                    
+                    contourAfter = self.getGamepadOutline(3)                   
+                    reward = self.tetrisAgent.getReward(deletedLines, contourBefore, contourAfter)
+                    self.tetrisAgent.learn(contourBefore,contourAfter, reward, cin, self.tetromino.kind)
+                    
+                    self.moveDown(7)
+                    
+                    if(self.drawingMode):
+                        self.fillBackground() 
+                        self.fillOldPosition()
+                        self.draw()
+                        print("REW: ", reward)
+                        print("AKT: ",cin)
+                        time.sleep(0.02)
+                    
                     self.newTetromino()
+                    #time.sleep(0.2)
+                    
                     
                     #self.actionMove = 0
                     
@@ -188,7 +208,9 @@ class Game:
                         if event.key == pygame.K_SPACE:
                             self.actionMove = 4
                             self.mode = 2
-                        else:                   
+                        else:
+                            if event.key == pygame.K_BACKSPACE:
+                                self.drawingMode = not self.drawingMode                                        
                             if event.key == pygame.K_DOWN:
                                 self.actionMove=3
                             if event.key == pygame.K_UP:
@@ -255,14 +277,33 @@ class Game:
                 
     def isLineCompleted(self,newLineElements):
         #nur reihen mit neuen bloecken ueberpruefen
+        deleted = 0
         for posy in newLineElements:
             if np.all(self.spielfeld[:,posy] != 0): # reihe vollständig
                 self.spielfeld = np.delete(self.spielfeld, posy, axis = 1) # reihe loeschen
-                emptyRow=np.zeros((10,1), dtype=int)
+                deleted = deleted + 1
+                emptyRow=np.zeros((self.GAME_WIDTH,1), dtype=int)
                 self.spielfeld = np.hstack((emptyRow,self.spielfeld)) #oben neue leere Reihe
                 newLineElements[newLineElements<posy]=newLineElements[newLineElements<posy]-1
                 self.reihen=self.reihen +1            
+        return deleted
+    
+    def moveDown(self,top):
         
+        y = self.spielfeld!=0
+        contour = np.zeros((y.shape[0],1), dtype=int) 
+        for col in range(y.shape[0]): 
+            #check if row is empty
+            if np.where(y[:][col])[:][0].size == 0:
+                contour[col][0] = 0
+            else:
+                contour[col][0] = self.GAME_HEIGHT - min(np.where(y[:][col])[:][0])
+                
+        if(max(contour)[0]>top):
+            self.spielfeld = np.delete(self.spielfeld, range(self.GAME_HEIGHT-4,self.GAME_HEIGHT), axis = 1) # reihe loeschen
+            emptyRow=np.zeros((self.GAME_WIDTH,4), dtype=int)
+            self.spielfeld = np.hstack((emptyRow,self.spielfeld)) #oben neue leere Reihe
+    
     def draw(self):
         #only Draw Changed
         #rects.append(fillBackground(screen))
@@ -313,29 +354,22 @@ class Game:
     
     def newTetromino(self):
         self.tetromino= self.upcomingTetromino
-        self.tetromino.start()
+        self.tetromino.start(2, 2)
         self.checkLose()
         self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
-        self.getGamepadOutline(3)
         
     def checkLose(self):
         positions=self.tetromino.getPositions()
         for i in range(4):
             if self.spielfeld[positions[0][i]][positions[1][i]] != 0: #position Blocked
                 self.lost = True
-    
+       
+            
     # Die Funktion liefert die Kontur des Spielfeldes als Array zurück
     # ArrayIndex ist von links nach rechts im Spielfeld aufsteigend
     def getGamepadOutline(self,maxDiff):
         
-        #y= self.spielfeld!=0 #
-        #contour = np.zeros((y.shape[0],1), dtype=int) 
-        #for col in range(y.shape[0]): # maximal 4 loops
-        #    if np.where(y[:][col])[:][0].size == 0:
-        #        contour[col][0] = 0
-        #    else:
-        #        contour[col][0] = self.GAME_HEIGHT - min(np.where(y[:][col])[:][0])
-        #return contour
+       
     
         outline = np.zeros(self.GAME_WIDTH-1, dtype=int)
         sizeBefore = 0
@@ -391,11 +425,9 @@ class Game:
         positions[:][1]-=min(positions[:][1])
         #maximale verschiebungen bei aktueller rotation
         possibilities = spielfeld.shape[0]-max(positions[:][0])
-        print(possibilities)
         while actionIndex>possibilities-1: # maximal 3 durchläufe
             actionIndex= actionIndex - possibilities           
             rotation = rotation + 1
-            print("rotating")
             if rotation>3:
                 return -1
             tetromino.rotate(-1)
