@@ -9,7 +9,8 @@ import numpy as np
 import pygame
 import Tetromino
 import copy
-import tetrisAgent
+#import tetrisAgent
+import neuronalAgent
 import time
 #import Spielfeld
  
@@ -51,7 +52,8 @@ class Game:
   
     def __init__(self, screenHeight, screenWidth, mode):
         
-        self.tetrisAgent = tetrisAgent.tetrisAgent( 3, self.TETROMINO_AMOUNT, self.GAME_WIDTH, 18, alpha=0.5, gamma=0.7, vareps=0.1)
+        #self.tetrisAgent = tetrisAgent.tetrisAgent( 3, self.TETROMINO_AMOUNT, self.GAME_WIDTH, 18, alpha=0.5, gamma=0.7, vareps=0.1)
+        self.agent = neuronalAgent.neuronalAgent()
         self.drawingMode = 1
         self.mode = mode
         self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
@@ -115,13 +117,16 @@ class Game:
                 if self.actionMove != 0:
                     #cin = input("actionIndex: ")
                     contourBefore = self.getGamepadOutline(3)
-                    cin = self.tetrisAgent.chooseAction(self.getGamepadOutline(3), self.tetromino.kind)
+                    #cin = self.tetrisAgent.chooseAction(self.getGamepadOutline(3), self.tetromino.kind)
+                    status = np.append(contourBefore,self.tetromino.kind)
+                    cin = self.agent.learn(status)
                     self.spielfeld = self.__applyAction(self.spielfeld, self.tetromino ,int(float(cin)))
                     deletedLines = self.isLineCompleted(np.array(range(18)))
                     
                     contourAfter = self.getGamepadOutline(3)                   
-                    reward = self.tetrisAgent.getReward(deletedLines, contourBefore, contourAfter)
-                    self.tetrisAgent.learn(contourBefore,contourAfter, reward, cin, self.tetromino.kind)
+                    #reward = self.tetrisAgent.getReward(deletedLines, contourBefore, contourAfter)
+                    reward = self.agent.calcReward(deletedLines)
+                    #self.tetrisAgent.learn(contourBefore,contourAfter, reward, cin, self.tetromino.kind)
                     
                     self.moveDown(7)
                     
@@ -129,8 +134,8 @@ class Game:
                         self.fillBackground() 
                         self.fillOldPosition()
                         self.draw()
-                        print("REW: ", reward)
-                        print("AKT: ",cin)
+                        #print("REW: ", reward)
+                        #print("AKT: ",cin)
                         time.sleep(0.02)
                     
                     self.newTetromino()
