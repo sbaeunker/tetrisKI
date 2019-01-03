@@ -12,7 +12,7 @@ import copy
 #import tetrisAgent
 import neuronalAgent
 import time
-#import Spielfeld
+import statistics as stats
  
 # Überprüfen, ob die optionalen Text- und Sound-Module geladen werden konnten.
 if not pygame.font: print('Fehler pygame.font Modul konnte nicht geladen werden!')
@@ -54,6 +54,8 @@ class Game:
         
         #self.tetrisAgent = tetrisAgent.tetrisAgent( 3, self.TETROMINO_AMOUNT, self.GAME_WIDTH, 18, alpha=0.5, gamma=0.7, vareps=0.1)
         self.agent = neuronalAgent.neuronalAgent()
+        self.statistics = stats.statistics()
+        self.plotInterval = 760
         self.drawingMode = 1
         self.mode = mode
         self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
@@ -65,7 +67,7 @@ class Game:
         # Fenster erstellen (wir bekommen eine Surface, die den Bildschirm repräsentiert).
         pygame.init()
         self.screen = pygame.display.set_mode((screenHeight, screenWidth))
-        
+        self.tetrominoCount = 0
         #bestimmte events erlauben fuer performance
         #pygame.event.set_allowed([pygame.QUIT, pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE])
         
@@ -117,15 +119,16 @@ class Game:
                 if self.actionMove != 0:
                     #cin = input("actionIndex: ")
                     contourBefore = self.getGamepadOutline(3)
+                    spielfeldVorher = self.spielfeld;
                     #cin = self.tetrisAgent.chooseAction(self.getGamepadOutline(3), self.tetromino.kind)
                     status = np.append(contourBefore,self.tetromino.kind)
                     cin = self.agent.learn(status)
                     self.spielfeld = self.__applyAction(self.spielfeld, self.tetromino ,int(float(cin)))
                     deletedLines = self.isLineCompleted(np.array(range(18)))
                     
-                    contourAfter = self.getGamepadOutline(3)                   
+                    #contourAfter = self.getGamepadOutline(3)                   
                     #reward = self.tetrisAgent.getReward(deletedLines, contourBefore, contourAfter)
-                    reward = self.agent.calcReward(deletedLines)
+                    self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
                     #self.tetrisAgent.learn(contourBefore,contourAfter, reward, cin, self.tetromino.kind)
                     
                     self.moveDown(7)
@@ -316,8 +319,9 @@ class Game:
         
         # render text
         labelReihen = self.FONT_MAIN.render("Reihen: "+str(self.reihen), 1, (255,255,0))
+        labelTetrominos = self.FONT_MAIN.render("Tetrominos: "+str(self.tetrominoCount), 1, (255,255,0))
         self.screen.blit(labelReihen, (200, 40))
-            
+        self.screen.blit(labelTetrominos, (200, 60))   
         self.drawTetromino(self.tetromino)
         self.drawTetromino(self.upcomingTetromino)
         self.drawField()
@@ -362,6 +366,11 @@ class Game:
         self.tetromino.start(2, 2)
         self.checkLose()
         self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
+        self.tetrominoCount+=1
+        if(self.tetrominoCount % self.plotInterval == 0):
+            self.statistics.plotStatistics(self.reihen,self.tetrominoCount);
+    
+        
         
     def checkLose(self):
         positions=self.tetromino.getPositions()
