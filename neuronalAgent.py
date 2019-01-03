@@ -44,30 +44,37 @@ class neuronalAgent():
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
         spielfeldNachher = spielfeldNachher !=0
         contourVorher = np.zeros((spielfeldVorher.shape[0],1), dtype=int)
-        contourNachher = np.zeros((spielfeldNachher.shape[0],1), dtype=int) 
-        for col in range(spielfeldVorher.shape[0]): # maximal 10 loops
+        contourNachher = np.zeros((spielfeldNachher.shape[0],1), dtype=int)
+        holesVorher = 0
+        holesNachher = 0
+        for col in range(spielfeldVorher.shape[0]): # maximal Anzal SpielfeldBreite loops
             #check if row is empty
             if np.where(spielfeldVorher[:][col])[:][0].size == 0:
                 contourVorher[col][0] = 0
             else:
                 contourVorher[col][0] = spielfeldVorher.shape[1] - min(np.where(spielfeldVorher[:][col])[:][0])
-            #print(  positions[1][np.where( positions[:][0] == col)[:][0]]  )
-        for col in range(spielfeldNachher.shape[0]): # maximal 4 loops
+                # find holes sucht nach aufeinanderfolgenden 1 und 0
+                holesVorher += np.count_nonzero(np.logical_and(spielfeldVorher[0:spielfeldVorher.shape[1]-1][col]==1,spielfeldVorher[1:spielfeldVorher.shape[1]][col] == 0))
+            
+        for col in range(spielfeldNachher.shape[0]): 
             #check if row is empty
             if np.where(spielfeldNachher[:][col])[:][0].size == 0:
                 contourNachher[col][0] = 0
             else:
                 contourNachher[col][0] = spielfeldNachher.shape[1] - min(np.where(spielfeldNachher[:][col])[:][0])
+                # find holes
+                holesNachher += np.count_nonzero(np.logical_and(spielfeldNachher[0:spielfeldNachher.shape[1]-1][col]==1,spielfeldNachher[1:spielfeldNachher.shape[1]][col] == 0))
         
         heightDiff= max(contourNachher)-max(contourVorher)
-        
+        holesDiff =  holesNachher - holesVorher
         self.rewards[self.memoryCounter]  = -1
         self.rewards[self.memoryCounter] += deletedLines*1000
+        self.rewards[self.memoryCounter]  -= 10 * holesDiff
         # nicht für löcher bestrafen da diese nicht immer sichtbar sind
         if(heightDiff > 0):#kleine Strafe bei größerer höhe
             self.rewards[self.memoryCounter] -= 20*heightDiff
-        else: #große Belohnung bei kleinerer oder gleicher höhe
-            self.rewards[self.memoryCounter] += 100 - 100* heightDiff #negative Heightdiff = feld ist niedriger geworden
+        else: #Belohnung gleicher höhe // kleinere höhe nur beim löschen der Line möglich
+            self.rewards[self.memoryCounter] += 100  #negative Heightdiff = feld ist niedriger geworden
 
     def _initQ(self):
         # np.hstack: Stack arrays in sequence horizontally (column wise)
