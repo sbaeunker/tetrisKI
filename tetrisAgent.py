@@ -8,16 +8,17 @@ import numpy as np
 
 class tetrisAgent:
     
-    def __init__(self, maxContourDiff, gameWidth, actionAmount, alpha=0.5, gamma=0.7, vareps=0.1):
+    def __init__(self, maxContourDiff, amountTetrominos, gameWidth, actionAmount, alpha=0.5, gamma=0.7, vareps=0.1):
         self.alpha = alpha
         self.gamma = gamma
         self.vareps = vareps
         self.statusSize = gameWidth-1
         self.actionAmount = actionAmount
         self.base = maxContourDiff*2+1
+        self.amountTetrominos = amountTetrominos
 
         #Anzahl aller Möglichen Konturen
-        self.contourPoss = self.base**self.statusSize
+        self.contourPoss = (self.base**self.statusSize)*amountTetrominos
         #Q-Werte-Array
         self.hatQ = np.zeros((self.contourPoss,actionAmount))
 
@@ -28,26 +29,27 @@ class tetrisAgent:
         return res
     
     #Wählt die nächste Aktion und gibt den Reward zurück
-    def chooseAction(self, contour):
+    def chooseAction(self, contour, tetrominoKind):
         rand = np.random.rand(1)
 
         if rand < self.vareps:
             a = np.random.randint(self.actionAmount)
         else:
-            idx = statusToQHatIdx(contour)
+            idx = self.statusToQHatIdx(contour)+tetrominoKind-1
             localQ = self.hatQ[idx,:]
             a = np.argmax(localQ)
         return a
 
-    def learn(self,contourBefore,contourAfter, reward, lastAction):
-        localQ = self.hatQ[statusToQHatIdx(contourAfter),:]
-        self.hatQ[statusToQHatIdx(contourBefore),lastAction] = r + self.gamma * np.max(localQs)
-        a = np.argmax(localQ)
+    def learn(self,contourBefore,contourAfter, reward, lastAction, tetrominoKind):
+        localQ = self.hatQ[self.statusToQHatIdx(contourAfter)+tetrominoKind,:]
+        self.hatQ[self.statusToQHatIdx(contourBefore)+tetrominoKind,lastAction] = reward + self.gamma * np.max(localQ)
+        #a = np.argmax(localQ)
+        
 
     def getReward(self, deletedLines, contourBefore, contourAfter):
         reward = -1
         reward = reward + deletedLines * 1000
-        reward = reward + ( np.sum(np.absolute(contourBefore)) - np.sum(np.absolute(contourAfter)))
+        reward = reward + 10*( np.sum(np.absolute(contourBefore)) - np.sum(np.absolute(contourAfter)))
         return reward
         
     #def __calcReward(self, gamepad):

@@ -9,6 +9,7 @@ import Game
 
 def main():
     game = Game.Game(800,600,0)
+
     #mode 0 = playMode
     #mode 1 = agentLearning ohne Grafik
     #mode 2 = agentLearning mit Grafik
