@@ -60,9 +60,13 @@ class Tetromino:
         self.kind = kind
         self.__createTetromino(kind,color)
         
+        
+        
     def start(self, x, y):
         self.__posX=x
         self.__posY=y
+        self.actionPosition = x
+        
         
     def moveDown(self):
         self.__posY=self.__posY+1
@@ -75,7 +79,7 @@ class Tetromino:
         
     def moveLeft(self):
         self.__posX=self.__posX-1
-    
+        
     def getPositions(self):
         relX, relY = np.where(self.pixels != 0)
         absX = relX+self.__posX
@@ -87,16 +91,20 @@ class Tetromino:
     # Rotiert das Objekt und gibt das Array mit Höhen und Breitenangaben zurück
     # @param1: Anzahl der Drehungen (>0 im Uhrzeigersinn; <0 gegen den Uhrzeigersinn)
     def rotate(self, steps):
+        #rotate here
         axes = (1,0)
         if steps < 0:
             steps = -steps
             axes = (0,1)
         self.pixels = np.rot90(self.pixels,steps,axes)
-    
+        
     def copy(self,t):
         t.__posY = self.__posY
         t.__posX = self.__posX
         t.pixels = np.copy(self.pixels)
+    
+    def getPosX(self):
+        return self.__posX 
     
     def setPosX(self,value):
         self.__posX = value
@@ -130,5 +138,6 @@ class Tetromino:
             self.pixels[0][2] = self.pixels[1][2] = self.pixels[2][2] = self.pixels[1][1] = 1
         elif kind == 6:#O
             self.pixels[0][0] = self.pixels[0][1] = self.pixels[1][0] = self.pixels[1][1] = 1
+            self.trim()
         elif kind == 7:#I
             self.pixels[0][0] = self.pixels[1][0] = self.pixels[2][0] = self.pixels[3][0] = 1

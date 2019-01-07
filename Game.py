@@ -92,7 +92,7 @@ class Game:
 
         self.lost= False
     
-        self.tetrominoKind = 6
+        self.tetrominoKind = None#6
         self.tetrominoColor = None
 
         # Erzeugt ein zufälliges Tetromino (tetrominoKind = None) mit der Farbe 1 (tetrominoColor = 1)
@@ -172,11 +172,13 @@ class Game:
             if self.actionMove == 1:
                 if self.canMoveLeft():
                     self.fillOldPosition()
-                    self.tetromino.moveLeft()             
+                    self.tetromino.moveLeft() 
+                    self.actionPosition-=1
             if self.actionMove == 2:
                 if self.canMoveRight():
                     self.fillOldPosition()
                     self.tetromino.moveRight()
+                    self.actionPosition+=1
             if self.actionMove == 3:
                 if self.tetrominoDrop():
                     self.fillOldPosition()
@@ -191,7 +193,20 @@ class Game:
             if self.actionRotate != 0:
                 if self.canRotate():
                     self.fillOldPosition()
-                    self.tetromino.rotate(self.actionRotate)                
+                    self.tetromino.rotate(self.actionRotate)
+                    self.rotations += 1
+                    #determine ActionPosition
+                    if( (self.rotations % 4) == 0):
+                        self.rotations = 0
+                        self.actionPosition= self.tetromino.getPosX()
+                    else:
+                        positions = np.array(self.tetromino.getPositions());
+                        positions[:][0]-=min(positions[:][0])
+                        positions[:][1]-=min(positions[:][1])
+                        possibilities =self.spielfeld.shape[0]-max(positions[:][0])
+                        self.actionPosition += possibilities
+                        
+                    #end of Action Position
                     self.draw()
                     self.actionRotate =0 # 0 = noAction ,
            
@@ -365,9 +380,16 @@ class Game:
                 return False
         return True
     
+    
     def newTetromino(self):
+        try:
+            print(self.actionPosition)
+        except:
+            pass #undefined in first row
         self.tetromino= self.upcomingTetromino
         self.tetromino.start(2, 2)
+        self.actionPosition = 2 # starting x Position
+        self.rotations = 0
         self.checkLose()
         self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
         self.tetrominoCount+=1
@@ -386,9 +408,7 @@ class Game:
     # Die Funktion liefert die Kontur des Spielfeldes als Array zurück
     # ArrayIndex ist von links nach rechts im Spielfeld aufsteigend
     def getGamepadOutline(self,maxDiff):
-        
-       
-    
+            
         outline = np.zeros(self.GAME_WIDTH-1, dtype=int)
         sizeBefore = 0
         for y in range(self.GAME_HEIGHT):
