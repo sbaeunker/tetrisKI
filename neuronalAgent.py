@@ -4,6 +4,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import l2
+from keras.models import load_model
 
 class neuronalAgent():
 
@@ -38,6 +39,18 @@ class neuronalAgent():
         self.memoryActions = np.inf*np.ones(self.memoryMax)
         self.rewards = np.zeros(self.memoryMax)
 
+    def saveNetwork(self, filename):
+        self.Q.save(filename)
+        size = min(self.memoryStates.shape[0],self.memoryActions.shape[0],self.rewards.shape[0])
+        data = np.transpose(np.vstack((np.transpose(self.memoryStates[0:size,:]),self.memoryActions[0:size],self.rewards[0:size])))
+        np.savetxt("data.csv",data,delimiter=",",header="States0,States1,States2,States3,States4,States5,Action,Reward")
+    
+    def loadNetwork(self, filename):
+        load_model(filename)
+        data = np.loadtxt("data.csv",delimiter=",",skiprows=1)
+        self.memoryActions = np.transpose(data[:,6])
+        self.memoryStates = data[:,0:6]
+        self.rewards = np.transpose(data[:,7])
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
@@ -141,7 +154,7 @@ class neuronalAgent():
         self.memoryCounter +=1
         if self.memoryCounter%self.updateFeq == 0 and not self.initPhase:
             self._updateQ()
-        if self.memoryCounter > min(500,self.memoryMax-1) and self.initPhase:
+        if self.memoryCounter > min(100,self.memoryMax-1) and self.initPhase:
             self.initPhase = False
             self._initQ()
             self._updateQ()

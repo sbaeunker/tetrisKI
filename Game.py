@@ -245,6 +245,10 @@ class Game:
                                     self.lost = False
                             elif event.key == pygame.K_RIGHT:
                                 self.actionMove=2
+                            elif event.key == pygame.K_s:
+                                self.agent.saveNetwork("neuronalNetworkSave")
+                            elif event.key == pygame.K_l:
+                                self.agent.loadNetwork("neuronalNetworkSave")
                                 
     def drawField(self):
         shape = np.shape(self.spielfeld)
