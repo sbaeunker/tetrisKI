@@ -131,7 +131,7 @@ class Game:
                     self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
                     #self.tetrisAgent.learn(contourBefore,contourAfter, reward, cin, self.tetromino.kind)
                     
-                    self.moveDown(7)
+                    self.moveDown(11)
                     
                     if(self.drawingMode):
                         self.fillBackground() 

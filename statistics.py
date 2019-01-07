@@ -20,8 +20,8 @@ class statistics():
     def plotStatistics(self, lines, tetrominos):
         self.linesList = np.append(self.linesList, lines)
         self.tetrominosList = np.append(self.tetrominosList, tetrominos)
-        print(self.linesList)
-        print(self.tetrominosList)
+        #print(self.linesList)
+        #print(self.tetrominosList)
         
         self.ax.plot(self.tetrominosList, self.linesList)
         self.ax.set(xlabel='Total Tetrominos', ylabel='Reihen',title='Reihen über Anzahl platzierter Steine')
