@@ -154,7 +154,7 @@ class neuronalAgent():
         self.memoryCounter +=1
         if self.memoryCounter%self.updateFeq == 0 and not self.initPhase:
             self._updateQ()
-        if self.memoryCounter > min(100,self.memoryMax-1) and self.initPhase:
+        if self.memoryCounter > min(500,self.memoryMax-1) and self.initPhase:
             self.initPhase = False
             self._initQ()
             self._updateQ()
