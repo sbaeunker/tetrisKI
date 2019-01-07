@@ -21,6 +21,7 @@ class neuronalAgent():
         self.memoryMax = memoryMax
         self.updateFeq = updateFeq
         self.badMemory = badMemory
+        self.actionAmount = actionAmount
         # Liste aller möglichen Aktionen
         self.a = np.array(range(0,actionAmount))
         # Counter und aktueller Gedächnisindex für Gedächnisarrays (siehe initMemory)
@@ -50,6 +51,7 @@ class neuronalAgent():
         contourNachher = np.zeros((spielfeldNachher.shape[0],1), dtype=int)
         holesVorher = 0
         holesNachher = 0
+        
         for col in range(spielfeldVorher.shape[0]): # maximal Anzal SpielfeldBreite loops
             #check if row is empty
             if np.where(spielfeldVorher[:][col])[:][0].size == 0:
@@ -57,7 +59,9 @@ class neuronalAgent():
             else:
                 contourVorher[col][0] = spielfeldVorher.shape[1] - min(np.where(spielfeldVorher[:][col])[:][0])
                 # find holes sucht nach aufeinanderfolgenden 1 und 0
-                holesVorher += np.count_nonzero(np.logical_and(spielfeldVorher[0:spielfeldVorher.shape[1]-1][col]==1,spielfeldVorher[1:spielfeldVorher.shape[1]][col] == 0))
+                #print(spielfeldVorher[col,0:(spielfeldVorher.shape[1]-1)])
+                #print(spielfeldVorher[col,1:(spielfeldVorher.shape[1])])
+                holesVorher += np.count_nonzero(np.logical_and(spielfeldVorher[col,0:(spielfeldVorher.shape[1]-1)] == 1 , spielfeldVorher[col,1:(spielfeldVorher.shape[1])] == 0))
             
         for col in range(spielfeldNachher.shape[0]): 
             #check if row is empty
@@ -66,7 +70,7 @@ class neuronalAgent():
             else:
                 contourNachher[col][0] = spielfeldNachher.shape[1] - min(np.where(spielfeldNachher[:][col])[:][0])
                 # find holes
-                holesNachher += np.count_nonzero(np.logical_and(spielfeldNachher[0:spielfeldNachher.shape[1]-1][col]==1,spielfeldNachher[1:spielfeldNachher.shape[1]][col] == 0))
+                holesNachher += np.count_nonzero(np.logical_and(spielfeldNachher[col,0:spielfeldNachher.shape[1]-1]==1,spielfeldNachher[col,1:spielfeldNachher.shape[1]] == 0))
         
         heightDiff= max(contourNachher)-max(contourVorher)
         holesDiff =  holesNachher - holesVorher
@@ -149,7 +153,7 @@ class neuronalAgent():
         
         if self.initPhase:
             self.initPhase = True
-            w = 1
+            w =  np.random.randint(self.actionAmount)
         else:
             qA = np.zeros_like(self.a)
             j = self.memoryStates[self.memoryCounter,:].shape[0]

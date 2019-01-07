@@ -461,7 +461,7 @@ class Game:
         contour = np.zeros((y.shape[0],1), dtype=int) 
         for col in range(y.shape[0]): # maximal 4 loops
             #check if row is empty
-            if np.where(y[:][col])[:][0].size == 0:
+            if np.where(y[:][col])[:][0].size == 0: # reiheinfolge der shape richtig ??????? TODO Stefan
                 contour[col][0] = 0
             else:
                 contour[col][0] = self.GAME_HEIGHT - min(np.where(y[:][col])[:][0])
