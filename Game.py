@@ -119,7 +119,7 @@ class Game:
                 if self.actionMove != 0:
                     #cin = input("actionIndex: ")
                     contourBefore = self.getGamepadOutline(3)
-                    spielfeldVorher = self.spielfeld;
+                    spielfeldVorher = self.spielfeld.copy();
                     #cin = self.tetrisAgent.chooseAction(self.getGamepadOutline(3), self.tetromino.kind)
                     status = np.append(contourBefore,self.tetromino.kind)
                     cin = self.agent.learn(status)
@@ -292,11 +292,15 @@ class Game:
         return True
                     
     def tetrominoMerge(self):
+        spielfeldVorher = self.spielfeld.copy()
+        deletedLines =0
         positions = self.tetromino.getPositions()
         for i in range(4):
             self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
         self.isLineCompleted(np.unique(positions[1]))
         self.fillBackground() 
+        
+        self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
                 
     def isLineCompleted(self,newLineElements):
         #nur reihen mit neuen bloecken ueberpruefen
@@ -378,10 +382,8 @@ class Game:
     
     
     def newTetromino(self):
-        try:
-            print(self.actionPosition)
-        except:
-            pass #undefined in first row
+        #print(self.actionPosition)
+        #undefined in first row
         self.tetromino= self.upcomingTetromino
         self.tetromino.start(2, 2)
         self.actionPosition = 2 # starting x Position

@@ -39,7 +39,7 @@ class neuronalAgent():
         self.rewards = np.zeros(self.memoryMax)
 
     
-    def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):
+    def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
         spielfeldNachher = spielfeldNachher !=0
         contourVorher = np.zeros((spielfeldVorher.shape[0],1), dtype=int)
@@ -66,9 +66,12 @@ class neuronalAgent():
                 contourNachher[col][0] = spielfeldNachher.shape[1] - min(np.where(spielfeldNachher[:][col])[:][0])
                 # find holes
                 holesNachher += np.count_nonzero(np.logical_and(spielfeldNachher[col,0:spielfeldNachher.shape[1]-1]==1,spielfeldNachher[col,1:spielfeldNachher.shape[1]] == 0))
+        #print(contourVorher)
+        #print(contourNachher)
         
-        heightDiff= max(contourNachher)-max(contourVorher)
+        heightDiff= max(contourNachher[:][0])-max(contourVorher[:][0])
         holesDiff =  holesNachher - holesVorher
+        #print(heightDiff)
         self.rewards[self.memoryCounter]  = -1
         self.rewards[self.memoryCounter] += deletedLines*1000
         self.rewards[self.memoryCounter]  -= 10 * holesDiff
@@ -76,7 +79,7 @@ class neuronalAgent():
         if(heightDiff > 0):#kleine Strafe bei größerer höhe
             self.rewards[self.memoryCounter] -= 20*heightDiff
         else: #Belohnung gleicher höhe // kleinere höhe nur beim löschen der Line möglich
-            self.rewards[self.memoryCounter] += 100  #negative Heightdiff = feld ist niedriger geworden
+            pass#self.rewards[self.memoryCounter] += 100  #negative Heightdiff = feld ist niedriger geworden
 
     def _initQ(self):
         # np.hstack: Stack arrays in sequence horizontally (column wise)
