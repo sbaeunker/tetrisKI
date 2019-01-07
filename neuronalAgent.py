@@ -37,10 +37,13 @@ class neuronalAgent():
         self.memoryActions = np.inf*np.ones(self.memoryMax)
         self.rewards = np.zeros(self.memoryMax)
 
+    def saveNetwork(self, filename):
+        self.Q.save(filename)
+    
+    def loadNetwork(self, filename):
+        self.Q.load_model(filename)
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):
-        
-        
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
         spielfeldNachher = spielfeldNachher !=0
         contourVorher = np.zeros((spielfeldVorher.shape[0],1), dtype=int)
