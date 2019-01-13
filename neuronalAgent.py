@@ -53,6 +53,9 @@ class neuronalAgent():
         self.memoryActions = np.transpose(data[:,6])
         self.memoryStates = data[:,0:5]
         self.rewards = np.transpose(data[:,7])
+        #self.initPhase = False
+        #self._initQ()
+        #self._updateQ()
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
