@@ -195,7 +195,7 @@ class Game:
                     self.tetromino.rotate(self.actionRotate)
                     self.rotations += 1
                     #determine ActionPosition
-                    if( (self.rotations > 3 ) == 0):
+                    if( self.rotations > 3 ):
                         self.rotations = 0
                         self.actionPosition = 0
                     else:
@@ -312,6 +312,9 @@ class Game:
         self.agent.memoryStates[self.agent.memoryCounter,:] = status
         self.agent.memoryActions[self.agent.memoryCounter] = self.actionPosition + self.tetromino.getPosX()
         self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
+        
+        print(status)
+        print(self.actionPosition + self.tetromino.getPosX())
                 
     def isLineCompleted(self,newLineElements):
         #nur reihen mit neuen bloecken ueberpruefen
