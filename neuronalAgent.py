@@ -38,9 +38,11 @@ class neuronalAgent():
         self.memoryStates = np.inf*np.ones( (self.memoryMax, number) )
         self.memoryActions = np.inf*np.ones(self.memoryMax)
         self.rewards = np.zeros(self.memoryMax)
+        
 
-    def saveNetwork(self, filename):
-        self.Q.save(filename)
+    def saveNetwork(self, filename , saveNN):
+        if(saveNN):
+            self.Q.save(filename)
         size = min(self.memoryStates.shape[0],self.memoryActions.shape[0],self.rewards.shape[0])
         data = np.transpose(np.vstack((np.transpose(self.memoryStates[0:size,:]),self.memoryActions[0:size],self.rewards[0:size])))
         np.savetxt("data.csv",data,delimiter=",",header="States0,States1,States2,States3,States4,States5,Action,Reward")
@@ -49,7 +51,7 @@ class neuronalAgent():
         load_model(filename)
         data = np.loadtxt("data.csv",delimiter=",",skiprows=1)
         self.memoryActions = np.transpose(data[:,6])
-        self.memoryStates = data[:,0:6]
+        self.memoryStates = data[:,0:5]
         self.rewards = np.transpose(data[:,7])
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
@@ -113,11 +115,11 @@ class neuronalAgent():
     def _updateQ(self):
         learnSet = np.arange(0,self.memoryCounter-1)
         index1 = np.flatnonzero(self.rewards[learnSet]<-0.9)    #   Suche alle Rewards kleiner als konst. Wert; neuster Reward wird nicht beachtet
-        #Überprüfe ob zu viele Werte für den miniButch vorliegen. Wenn ja suche zufällig welche raus
+        #Überprüfe ob zu viele Werte für den miniBatch vorliegen. Wenn ja suche zufällig welche raus
         if index1.shape[0] > self.badMemory:             
             index = np.random.choice(index1.shape[0], self.badMemory, replace=False)
             index1 = index1[index]
-        #Nimm noch mehr Werte für den Butch dazu
+        #Nimm noch mehr Werte für den Batch dazu
         samplesleft = min(index1.shape[0]*5,self.memoryCounter-index1.shape[0]-1)
         index2 = np.random.choice(self.memoryCounter-1, samplesleft, replace=False)
         #Beide Wertearrays zusammenhängen
