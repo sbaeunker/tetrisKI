@@ -310,7 +310,7 @@ class Game:
         status = np.append(contourBefore,self.tetromino.kind)
         self.agent.memoryCounter +=1
         self.agent.memoryStates[self.agent.memoryCounter,:] = status
-        self.agent.memoryActions[self.agent.memoryCounter] = self.actionPosition + self.tetromino.getPosX
+        self.agent.memoryActions[self.agent.memoryCounter] = self.actionPosition + self.tetromino.getPosX()
         self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
                 
     def isLineCompleted(self,newLineElements):
