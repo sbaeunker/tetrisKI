@@ -249,8 +249,7 @@ class Game:
                             elif event.key == pygame.K_s:
                                 self.agent.saveNetwork("neuronalNetworkSave", self.mode == 2,self.tetrominoCount-1) #speichert im KI modus netz mit ab
                             elif event.key == pygame.K_l:
-                                if self.mode == 2:
-                                    self.agent.loadNetwork("neuronalNetworkSave")
+                                self.agent.loadNetwork("neuronalNetworkSave")
                                 
     def drawField(self):
         shape = np.shape(self.spielfeld)
@@ -314,7 +313,7 @@ class Game:
         self.agent.memoryStates[self.agent.memoryCounter,:] = status
         self.agent.memoryActions[self.agent.memoryCounter] = self.actionPosition + self.tetromino.getPosX()
         self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
-        
+        self.moveDown(15)
         #print(self.actionPosition, self.tetromino.getPosX(), self.actionPosition + self.tetromino.getPosX())
         #self.__applyAction(self.spielfeld, Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor) , self.actionPosition + self.tetromino.getPosX())
                 
