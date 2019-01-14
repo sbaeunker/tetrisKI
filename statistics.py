@@ -18,13 +18,13 @@ class statistics():
         self.fig.show()
     
     def plotStatistics(self, lines, tetrominos):
-        self.linesList = np.append(self.linesList, lines)
+        self.linesList = np.append(self.linesList, lines/tetrominos)
         self.tetrominosList = np.append(self.tetrominosList, tetrominos)
         #print(self.linesList)
         #print(self.tetrominosList)
         
         self.ax.plot(self.tetrominosList, self.linesList)
-        self.ax.set(xlabel='Total Tetrominos', ylabel='Reihen',title='Reihen über Anzahl platzierter Steine')
+        self.ax.set(xlabel='Total Tetrominos', ylabel='Reihen/Tetrominos',title='Güte der Strategie')
         self.ax.grid()
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()

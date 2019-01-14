@@ -75,6 +75,9 @@ class neuronalAgent():
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
         spielfeldNachher = spielfeldNachher !=0
+        
+        #print(spielfeldVorher)
+        #print(spielfeldNachher)
         contourVorher = np.zeros((spielfeldVorher.shape[0],1), dtype=int)
         contourNachher = np.zeros((spielfeldNachher.shape[0],1), dtype=int)
         holesVorher = 0
@@ -99,21 +102,24 @@ class neuronalAgent():
                 contourNachher[col][0] = spielfeldNachher.shape[1] - min(np.where(spielfeldNachher[:][col])[:][0])
                 # find holes
                 holesNachher += np.count_nonzero(np.logical_and(spielfeldNachher[col,0:spielfeldNachher.shape[1]-1]==1,spielfeldNachher[col,1:spielfeldNachher.shape[1]] == 0))
-        #print(contourVorher)
-        #print(contourNachher)
+        #print("contourVoher",contourVorher)
+        #print("contourNachher",contourNachher)
         
-        heightDiff= max(contourNachher[:][0])-max(contourVorher[:][0])
+        heightDiff= max(contourNachher[:])-max(contourVorher[:])[0]
         holesDiff =  holesNachher - holesVorher
-        #print(heightDiff)
+        #print("holes",holesDiff)
+        #print("heightdiff",heightDiff)
         self.rewards[self.memoryCounter]  = -1
         self.rewards[self.memoryCounter] += deletedLines*1000
-        self.rewards[self.memoryCounter]  -= 10 * holesDiff
+        self.rewards[self.memoryCounter]  -= 20 * holesDiff
         # nicht für löcher bestrafen da diese nicht immer sichtbar sind
         if(heightDiff > 0):#kleine Strafe bei größerer höhe
-            self.rewards[self.memoryCounter] -= 20*heightDiff
+            self.rewards[self.memoryCounter] -= 5*heightDiff
         else: #Belohnung gleicher höhe // kleinere höhe nur beim löschen der Line möglich
-            pass#self.rewards[self.memoryCounter] += 100  #negative Heightdiff = feld ist niedriger geworden
-
+            self.rewards[self.memoryCounter] += 10  #negative Heightdiff = feld ist niedriger geworden
+        
+        #print(self.rewards[self.memoryCounter])
+        
     def _initQ(self):
         # np.hstack: Stack arrays in sequence horizontally (column wise)
         # Legt das Wertetupel (Status, Aktion) an
