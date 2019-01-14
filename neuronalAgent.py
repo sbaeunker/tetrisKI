@@ -10,7 +10,7 @@ class neuronalAgent():
 
     #Konstruktor der Klasse
     #Initialisiert alle Arrays und sonstigne Dinge die benötigt werden
-    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.5, gamma=0.7, updateFeq=500, badMemory = 3000, gameSize = 6):
+    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.7, gamma=0.3, updateFeq=500, badMemory = 3000, gameSize = 6):
         # Gewicht, wie stark die alte Q-Aproximation bei der weitern Annäherung berücksichtigt wird (bestimmt Änderungsrate von Aproximiertem Q)
         # [0,1]; 0=> Nur der alte Wert gilt (vollkommen sinnlos); 1=> nur die neuberechnete Aproximation wird berücksichtigt
         self.alpha = alpha
