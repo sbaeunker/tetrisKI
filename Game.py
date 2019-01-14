@@ -470,7 +470,6 @@ class Game:
 
 
     def __applyAction(self, spielfeld, tetromino , actionIndex):
-        print("neuer tetromino, action index", actionIndex)
 		#es wäre schneller eine Liste aller möglichen Aktionen zu haben als, diese in jedem schritt neu auszurechnen.
         rotation=0
         positions = np.array(tetromino.getPositions());
@@ -491,7 +490,6 @@ class Game:
             positions[:][1] = positions[:][1] - min(positions[:][1])
             #maximale verschiebungen bei aktueller rotation
             possibilities = spielfeld.shape[0]-max(positions[:][0])
-            print("rotation", rotation, "möglichkeiten",possibilities,"verbleibender Index", actionIndex)
             
         #alle Rotationen zuEnde jetzt ist actionindex die x verschiebung
          
