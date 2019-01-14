@@ -56,7 +56,7 @@ class Game:
         self.agent = neuronalAgent.neuronalAgent()
         #self.trackingAgent = neuronalAgent.neuronalAgent() eventuel hier Daten aufnehmen
         self.statistics = stats.statistics()
-        self.plotInterval = 760
+        self.plotInterval = 200
         self.drawingMode = 1
         self.mode = mode
         self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
