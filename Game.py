@@ -120,7 +120,8 @@ class Game:
                 if self.actionMove != 0:
                     #cin = input("actionIndex: ")
                     contourBefore = self.getGamepadOutline(3)
-                    spielfeldVorher = self.spielfeld.copy();
+                    spielfeldVorher = np.zeros_like(self.spielfeld);
+                    spielfeldVorher[:,:] = self.spielfeld
                     #cin = self.tetrisAgent.chooseAction(self.getGamepadOutline(3), self.tetromino.kind)
                     status = np.append(contourBefore,self.tetromino.kind)
                     cin = self.agent.learn(status)
@@ -298,7 +299,9 @@ class Game:
                            
         
     def tetrominoMerge(self):
-        spielfeldVorher = self.spielfeld.copy()
+        spielfeldVorher = np.zeros_like(self.spielfeld);
+        spielfeldVorher[:,:] = self.spielfeld
+        
         deletedLines =0
         positions = self.tetromino.getPositions()
         for i in range(4):
@@ -307,7 +310,7 @@ class Game:
         self.fillBackground() 
         
         contourBefore = self.getGamepadOutline(3)
-        spielfeldVorher = self.spielfeld.copy();                   
+                 
         status = np.append(contourBefore,self.tetromino.kind)
         self.agent.memoryCounter +=1
         self.agent.memoryStates[self.agent.memoryCounter,:] = status
