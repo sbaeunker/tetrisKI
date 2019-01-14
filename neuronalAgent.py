@@ -10,7 +10,7 @@ class neuronalAgent():
 
     #Konstruktor der Klasse
     #Initialisiert alle Arrays und sonstigne Dinge die benötigt werden
-    def __init__(self, tau=1, actionAmount=12, memoryMax=1000000, alpha=0.5, gamma=0.7, updateFeq=500, badMemory = 3000):
+    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.5, gamma=0.7, updateFeq=500, badMemory = 3000, gameSize = 6):
         # Gewicht, wie stark die alte Q-Aproximation bei der weitern Annäherung berücksichtigt wird (bestimmt Änderungsrate von Aproximiertem Q)
         # [0,1]; 0=> Nur der alte Wert gilt (vollkommen sinnlos); 1=> nur die neuberechnete Aproximation wird berücksichtigt
         self.alpha = alpha
@@ -29,10 +29,10 @@ class neuronalAgent():
         self.memoryCounter = -1         # Zählvariable für die Speicherwerte/das Gedächnis
         # In der ersten Phase ist die Q-Funktion noch BLA und daher gibt es eine initPhase in der die Aktionen vorgeschrieben werden
         self.initPhase = True
-        self.initMemory()
+        self.initMemory(gameSize)
 
     #Initialisiert die Speicherwert/Gedächniswerte
-    def initMemory(self, number=6):
+    def initMemory(self, number):
         #Speicherwerte für Q-Funktions-Approximation
         #(s,r,a,s') wobei s' durch den nächsten Eintrag gespeichert wird, da dieser sonst doppelt vorkommen würde
         self.memoryStates = np.inf*np.ones( (self.memoryMax, number) )
@@ -40,12 +40,19 @@ class neuronalAgent():
         self.rewards = np.zeros(self.memoryMax)
         
 
-    def saveNetwork(self, filename , saveNN):
+    def saveNetwork(self, filename , saveNN , size):
         if(saveNN):
             self.Q.save(filename)
-        size = min(self.memoryStates.shape[0],self.memoryActions.shape[0],self.rewards.shape[0])
+        if size == None:
+            size = min(self.me,self.memoryActions.shape[0],self.rewards.shape[0])
+        else:
+            size = min(size,self.memoryMax)
         data = np.transpose(np.vstack((np.transpose(self.memoryStates[0:size,:]),self.memoryActions[0:size],self.rewards[0:size])))
-        np.savetxt("data.csv",data,delimiter=",",header="States0,States1,States2,States3,States4,States5,Action,Reward")
+        header = ""
+        for i in range(self.memoryStates[self.memoryCounter,:].shape[0]):
+            header+= "states" + str(i) +","
+        header+="Action,Reward"
+        np.savetxt("data.csv",data,delimiter=",",header= header)
     
     def loadNetwork(self, filename):
         load_model(filename)
@@ -53,9 +60,9 @@ class neuronalAgent():
         self.memoryActions = np.transpose(data[:,6])
         self.memoryStates = data[:,0:5]
         self.rewards = np.transpose(data[:,7])
-        #self.initPhase = False
-        #self._initQ()
-        #self._updateQ()
+        self.initPhase = False
+        self._initQ()
+        self._updateQ()
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0

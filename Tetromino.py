@@ -98,10 +98,12 @@ class Tetromino:
             axes = (0,1)
         self.pixels = np.rot90(self.pixels,steps,axes)
         
-    def copy(self,t):
+    def copy(self):
+        t = Tetromino(self.kind,self.color)
         t.__posY = self.__posY
         t.__posX = self.__posX
         t.pixels = np.copy(self.pixels)
+        return t
     
     def getPosX(self):
         return self.__posX 
@@ -138,6 +140,6 @@ class Tetromino:
             self.pixels[0][2] = self.pixels[1][2] = self.pixels[2][2] = self.pixels[1][1] = 1
         elif kind == 6:#O
             self.pixels[0][0] = self.pixels[0][1] = self.pixels[1][0] = self.pixels[1][1] = 1
-            self.trim()
         elif kind == 7:#I
             self.pixels[0][0] = self.pixels[1][0] = self.pixels[2][0] = self.pixels[3][0] = 1
+        self.trim()

@@ -192,7 +192,7 @@ class Game:
             if self.actionRotate != 0:
                 if self.canRotate():
                     self.fillOldPosition()
-                    self.tetromino.rotate(self.actionRotate)
+                    
                     self.rotations += 1
                     #determine ActionPosition
                     if( self.rotations > 3 ):
@@ -204,7 +204,9 @@ class Game:
                         positions[:][1]-=min(positions[:][1])
                         possibilities =self.spielfeld.shape[0]-max(positions[:][0])
                         self.actionPosition += possibilities
-                        
+                    
+                    
+                    self.tetromino.rotate(-1)
                     #end of Action Position
                     self.draw()
                     self.actionRotate =0 # 0 = noAction ,
@@ -245,7 +247,7 @@ class Game:
                             elif event.key == pygame.K_RIGHT:
                                 self.actionMove=2
                             elif event.key == pygame.K_s:
-                                self.agent.saveNetwork("neuronalNetworkSave", self.mode == 2) #speichert im KI modus netz mit ab
+                                self.agent.saveNetwork("neuronalNetworkSave", self.mode == 2,self.tetrominoCount-1) #speichert im KI modus netz mit ab
                             elif event.key == pygame.K_l:
                                 if self.mode == 2:
                                     self.agent.loadNetwork("neuronalNetworkSave")
@@ -313,8 +315,8 @@ class Game:
         self.agent.memoryActions[self.agent.memoryCounter] = self.actionPosition + self.tetromino.getPosX()
         self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
         
-        print(status)
-        print(self.actionPosition + self.tetromino.getPosX())
+        #print(self.actionPosition, self.tetromino.getPosX(), self.actionPosition + self.tetromino.getPosX())
+        #self.__applyAction(self.spielfeld, Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor) , self.actionPosition + self.tetromino.getPosX())
                 
     def isLineCompleted(self,newLineElements):
         #nur reihen mit neuen bloecken ueberpruefen
@@ -468,6 +470,7 @@ class Game:
 
 
     def __applyAction(self, spielfeld, tetromino , actionIndex):
+        print("neuer tetromino, action index", actionIndex)
 		#es wäre schneller eine Liste aller möglichen Aktionen zu haben als, diese in jedem schritt neu auszurechnen.
         rotation=0
         positions = np.array(tetromino.getPositions());
@@ -480,13 +483,15 @@ class Game:
             actionIndex= actionIndex - possibilities           
             rotation = rotation + 1
             if rotation>3:
-                return -1
+                return -1 # falls actionIndex zu groß zu weit gedreht
+                print("ActionIndex zu groß. Alles Falsch")
             tetromino.rotate(-1)
             positions = np.array(tetromino.getPositions());
             positions[:][0] = positions[:][0] - min(positions[:][0])
             positions[:][1] = positions[:][1] - min(positions[:][1])
             #maximale verschiebungen bei aktueller rotation
             possibilities = spielfeld.shape[0]-max(positions[:][0])
+            print("rotation", rotation, "möglichkeiten",possibilities,"verbleibender Index", actionIndex)
             
         #alle Rotationen zuEnde jetzt ist actionindex die x verschiebung
          
