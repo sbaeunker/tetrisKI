@@ -29,6 +29,7 @@ class neuronalAgent():
         self.memoryCounter = -1         # Zählvariable für die Speicherwerte/das Gedächnis
         # In der ersten Phase ist die Q-Funktion noch BLA und daher gibt es eine initPhase in der die Aktionen vorgeschrieben werden
         self.initPhase = True
+        self.gameSize = gameSize
         self.initMemory(gameSize)
 
     #Initialisiert die Speicherwert/Gedächniswerte
@@ -55,14 +56,21 @@ class neuronalAgent():
         np.savetxt("data.csv",data,delimiter=",",header= header)
     
     def loadNetwork(self, filename):
-        load_model(filename)
+        try:
+            load_model(filename)
+        except:
+            print("no neuronal network file found")
         data = np.loadtxt("data.csv",delimiter=",",skiprows=1)
-        self.memoryActions = np.transpose(data[:,6])
-        self.memoryStates = data[:,0:5]
-        self.rewards = np.transpose(data[:,7])
+        self.memoryCounter = data.shape[0]-1
+        self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
+        self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
+        self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
+        
         self.initPhase = False
         self._initQ()
         self._updateQ()
+        print(self.memoryActions.shape[0])
+        
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
