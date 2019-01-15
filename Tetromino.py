@@ -137,7 +137,7 @@ class Tetromino:
         elif kind == 5:#T
             self.pixels[0][2] = self.pixels[1][2] = self.pixels[2][2] = self.pixels[1][1] = 1
         elif kind == 6:#O
-            self.pixels[0][0] = self.pixels[0][1] = self.pixels[1][0] = self.pixels[1][1] = 1
-            self.trim()
+            self.pixels[0][0] = self.pixels[0][1] = self.pixels[1][0] = self.pixels[1][1] = 1          
         elif kind == 7:#I
             self.pixels[0][0] = self.pixels[1][0] = self.pixels[2][0] = self.pixels[3][0] = 1
+        self.trim()

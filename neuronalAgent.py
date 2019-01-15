@@ -48,14 +48,15 @@ class neuronalAgent():
         np.savetxt("data.csv",data,delimiter=",",header="States0,States1,States2,States3,States4,States5,Action,Reward")
     
     def loadNetwork(self, filename):
-        load_model(filename)
+        #load_model(filename)
         data = np.loadtxt("data.csv",delimiter=",",skiprows=1)
         self.memoryActions = np.transpose(data[:,6])
         self.memoryStates = data[:,0:5]
         self.rewards = np.transpose(data[:,7])
-        #self.initPhase = False
-        #self._initQ()
-        #self._updateQ()
+        self.memoryCounter += 225 # TODO
+        self.initPhase = False
+        self._initQ()
+        self._updateQ()
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
