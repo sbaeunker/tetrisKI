@@ -10,7 +10,7 @@ class neuronalAgent():
 
     #Konstruktor der Klasse
     #Initialisiert alle Arrays und sonstigne Dinge die benötigt werden
-    def __init__(self, tau=1, actionAmount=12, memoryMax=1000000, alpha=0.5, gamma=0.7, updateFeq=500, badMemory = 3000):
+    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.7, gamma=0.3, updateFeq=500, badMemory = 3000, gameSize = 6):
         # Gewicht, wie stark die alte Q-Aproximation bei der weitern Annäherung berücksichtigt wird (bestimmt Änderungsrate von Aproximiertem Q)
         # [0,1]; 0=> Nur der alte Wert gilt (vollkommen sinnlos); 1=> nur die neuberechnete Aproximation wird berücksichtigt
         self.alpha = alpha
@@ -29,10 +29,11 @@ class neuronalAgent():
         self.memoryCounter = -1         # Zählvariable für die Speicherwerte/das Gedächnis
         # In der ersten Phase ist die Q-Funktion noch BLA und daher gibt es eine initPhase in der die Aktionen vorgeschrieben werden
         self.initPhase = True
-        self.initMemory()
+        self.gameSize = gameSize
+        self.initMemory(gameSize)
 
     #Initialisiert die Speicherwert/Gedächniswerte
-    def initMemory(self, number=6):
+    def initMemory(self, number):
         #Speicherwerte für Q-Funktions-Approximation
         #(s,r,a,s') wobei s' durch den nächsten Eintrag gespeichert wird, da dieser sonst doppelt vorkommen würde
         self.memoryStates = np.inf*np.ones( (self.memoryMax, number) )
@@ -40,27 +41,43 @@ class neuronalAgent():
         self.rewards = np.zeros(self.memoryMax)
         
 
-    def saveNetwork(self, filename , saveNN):
+    def saveNetwork(self, filename , saveNN , size):
         if(saveNN):
             self.Q.save(filename)
-        size = min(self.memoryStates.shape[0],self.memoryActions.shape[0],self.rewards.shape[0])
+        if size == None:
+            size = min(self.me,self.memoryActions.shape[0],self.rewards.shape[0])
+        else:
+            size = min(size,self.memoryMax)
         data = np.transpose(np.vstack((np.transpose(self.memoryStates[0:size,:]),self.memoryActions[0:size],self.rewards[0:size])))
-        np.savetxt("data.csv",data,delimiter=",",header="States0,States1,States2,States3,States4,States5,Action,Reward")
+        header = ""
+        for i in range(self.memoryStates[self.memoryCounter,:].shape[0]):
+            header+= "states" + str(i) +","
+        header+="Action,Reward"
+        np.savetxt("data.csv",data,delimiter=",",header= header)
     
     def loadNetwork(self, filename):
-        #load_model(filename)
+        try:
+            load_model(filename)
+        except:
+            print("no neuronal network file found")
         data = np.loadtxt("data.csv",delimiter=",",skiprows=1)
-        self.memoryActions = np.transpose(data[:,6])
-        self.memoryStates = data[:,0:5]
-        self.rewards = np.transpose(data[:,7])
-        self.memoryCounter += 225 # TODO
+        self.memoryCounter = data.shape[0]-1
+        self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
+        self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
+        self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
+        
         self.initPhase = False
         self._initQ()
         self._updateQ()
+        print(self.memoryActions.shape[0])
+        
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
         spielfeldNachher = spielfeldNachher !=0
+        
+        #print(spielfeldVorher)
+        #print(spielfeldNachher)
         contourVorher = np.zeros((spielfeldVorher.shape[0],1), dtype=int)
         contourNachher = np.zeros((spielfeldNachher.shape[0],1), dtype=int)
         holesVorher = 0
@@ -85,21 +102,24 @@ class neuronalAgent():
                 contourNachher[col][0] = spielfeldNachher.shape[1] - min(np.where(spielfeldNachher[:][col])[:][0])
                 # find holes
                 holesNachher += np.count_nonzero(np.logical_and(spielfeldNachher[col,0:spielfeldNachher.shape[1]-1]==1,spielfeldNachher[col,1:spielfeldNachher.shape[1]] == 0))
-        #print(contourVorher)
-        #print(contourNachher)
+        #print("contourVoher",contourVorher)
+        #print("contourNachher",contourNachher)
         
-        heightDiff= max(contourNachher[:][0])-max(contourVorher[:][0])
+        heightDiff= max(contourNachher[:])-max(contourVorher[:])[0]
         holesDiff =  holesNachher - holesVorher
-        #print(heightDiff)
+        #print("holes",holesDiff)
+        #print("heightdiff",heightDiff)
         self.rewards[self.memoryCounter]  = -1
         self.rewards[self.memoryCounter] += deletedLines*1000
-        self.rewards[self.memoryCounter]  -= 10 * holesDiff
+        self.rewards[self.memoryCounter]  -= 20 * holesDiff
         # nicht für löcher bestrafen da diese nicht immer sichtbar sind
         if(heightDiff > 0):#kleine Strafe bei größerer höhe
-            self.rewards[self.memoryCounter] -= 20*heightDiff
+            self.rewards[self.memoryCounter] -= 5*heightDiff
         else: #Belohnung gleicher höhe // kleinere höhe nur beim löschen der Line möglich
-            pass#self.rewards[self.memoryCounter] += 100  #negative Heightdiff = feld ist niedriger geworden
-
+            self.rewards[self.memoryCounter] += 10  #negative Heightdiff = feld ist niedriger geworden
+        
+        #print(self.rewards[self.memoryCounter])
+        
     def _initQ(self):
         # np.hstack: Stack arrays in sequence horizontally (column wise)
         # Legt das Wertetupel (Status, Aktion) an
