@@ -126,7 +126,7 @@ class Game:
                     status = np.append(contourBefore,self.tetromino.kind)
                     cin = self.agent.learn(status)
                     self.spielfeld = self.__applyAction(self.spielfeld, self.tetromino ,int(float(cin)))
-                    deletedLines = self.isLineCompleted(np.array(range(18)))
+                    deletedLines = self.isLineCompleted(np.array(range(self.GAME_HEIGHT)))
                     
                     #contourAfter = self.getGamepadOutline(3)                   
                     #reward = self.tetrisAgent.getReward(deletedLines, contourBefore, contourAfter)

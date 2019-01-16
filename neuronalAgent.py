@@ -10,7 +10,7 @@ class neuronalAgent():
 
     #Konstruktor der Klasse
     #Initialisiert alle Arrays und sonstigne Dinge die benötigt werden
-    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.5, gamma=0.5, updateFeq=500, badMemory = 3000, gameSize = 6):
+    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.3, gamma=0.5, updateFeq=500, badMemory = 3000, gameSize = 6):
         # Gewicht, wie stark die alte Q-Aproximation bei der weitern Annäherung berücksichtigt wird (bestimmt Änderungsrate von Aproximiertem Q)
         # [0,1]; 0=> Nur der alte Wert gilt (vollkommen sinnlos); 1=> nur die neuberechnete Aproximation wird berücksichtigt
         self.alpha = alpha
@@ -110,15 +110,15 @@ class neuronalAgent():
         #print("holes",holesDiff)
         #print("heightdiff",heightDiff)
         self.rewards[self.memoryCounter]  = -1
-        self.rewards[self.memoryCounter] += deletedLines*1000
-        self.rewards[self.memoryCounter]  -= 30 * holesDiff
+        self.rewards[self.memoryCounter] += deletedLines*150
+        self.rewards[self.memoryCounter]  -= 50 * holesDiff
         if(holesDiff == 0):
-            self.rewards[self.memoryCounter] += 30
+            self.rewards[self.memoryCounter] += 100
         # nicht für löcher bestrafen da diese nicht immer sichtbar sind
         if(heightDiff > 0):#kleine Strafe bei größerer höhe
             self.rewards[self.memoryCounter] -=(max(contourVorher[:])[0]- min(contourVorher[:])[0])*heightDiff #soll türmchen verhindern
         else: #Belohnung gleicher höhe // kleinere höhe nur beim löschen der Line möglich
-            self.rewards[self.memoryCounter] += 5  
+            self.rewards[self.memoryCounter] += 50  
         
         #print(self.rewards[self.memoryCounter])
         
