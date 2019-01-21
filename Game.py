@@ -497,6 +497,7 @@ class Game:
                 self.fillOldPosition()
                 self.draw()
                 time.sleep(self.DRAW_MODE_DELAY)
+                self.handleEvents()
             positions = np.array(tetromino.getPositions());
             positions[:][0] = positions[:][0] - min(positions[:][0])
             positions[:][1] = positions[:][1] - min(positions[:][1])
@@ -515,12 +516,14 @@ class Game:
                 self.fillOldPosition()
                 self.draw()
                 time.sleep(self.DRAW_MODE_DELAY)
+                self.handleEvents()
             while(self.tetrominoDrop()):
                 self.tetromino.moveDown()
                 self.fillBackground() 
                 self.fillOldPosition()
                 self.draw()
                 time.sleep(self.DRAW_MODE_DELAY)
+                self.handleEvents()
         else:
             y= spielfeld[np.unique(positions[:][0] + actionIndex )][:]!=0 # y Koordinaten != 0
             contour = np.zeros((y.shape[0],1), dtype=int) 

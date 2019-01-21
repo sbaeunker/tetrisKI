@@ -66,7 +66,7 @@ class neuronalAgent():
             
         self._initQ()
         try:
-            self.Q.load_weights(filename+"weights.h5")
+            self.Q.load_weights(filename+".weights.h5")
         except:
             print("ERROR: no neuronal network file found!")
 
