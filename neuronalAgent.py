@@ -41,9 +41,11 @@ class neuronalAgent():
         self.rewards = np.zeros(self.memoryMax)
         
 
-    def saveNetwork(self, filename , saveNN , size):
-        if(saveNN):
-            self.Q.save(filename)
+    def saveNetwork(self, filename):
+        self.Q.save(filename + ".model.h5")
+        self.Q.save_weights(filename + '.weights.h5')
+    
+    def saveData( self, filename, size):
         if size == None:
             size = min(self.me,self.memoryActions.shape[0],self.rewards.shape[0])
         else:
@@ -53,24 +55,28 @@ class neuronalAgent():
         for i in range(self.memoryStates[self.memoryCounter,:].shape[0]):
             header+= "states" + str(i) +","
         header+="Action,Reward"
-        np.savetxt("data.csv",data,delimiter=",",header= header)
+        np.savetxt(filename+".csv",data,delimiter=",",header= header)
     
     def loadNetwork(self, filename):
-        #try:
-        del self.Q
-        self.Q = load_model(filename)
-        #except:
-        #print("no neuronal network file found")
-        #data = np.loadtxt("data.csv",delimiter=",",skiprows=1)
-        #self.memoryCounter = data.shape[0]-1
-        #self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
-        #self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
-        #self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
-        print("Netz geladen")
-        self.initPhase = False
-        #self._initQ()
-        #self._updateQ()
-        
+        try:
+            del self.Q
+            
+        except:
+            print("INFO: Neuronalnet is not initialisized")
+            
+        self._initQ()
+        try:
+            self.Q.load_weights(filename+"weights.h5")
+        except:
+            print("ERROR: no neuronal network file found!")
+
+    def loadData(self, filename):
+        data = np.loadtxt(filename+".csv",delimiter=",",skiprows=1)
+        self.memoryCounter = data.shape[0]-1
+        self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
+        self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
+        self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
+
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0

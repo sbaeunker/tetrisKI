@@ -249,9 +249,13 @@ class Game:
                             elif event.key == pygame.K_RIGHT:
                                 self.actionMove=2
                             elif event.key == pygame.K_s:
-                                self.agent.saveNetwork("neuronalNetworkSave", self.mode == 2,self.tetrominoCount-1) #speichert im KI modus netz mit ab
+                                self.agent.saveNetwork("neuronalNetwork") #speichert im KI modus netz mit ab
+                                self.agent.saveData("gameData", self.tetrominoCount-1)
                             elif event.key == pygame.K_l:
-                                self.agent.loadNetwork("neuronalNetworkSave")
+                                self.agent.loadNetwork("neuronalNetwork")
+                            elif event.key == pygame.K_i:
+                                self.agent.loadNetwork("neuronalNetwork")
+                                self.agent.loadData("gameData")
                                 
     def drawField(self):
         shape = np.shape(self.spielfeld)
