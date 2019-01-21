@@ -23,6 +23,7 @@ class statistics():
         #self.timesList = [datetime.datetime.now().strftime("%H:%M")]
         self.fig, (self.ax1, self.ax2) = plt.subplots(2, 1)
         self.fig.show()
+        
     
     def plotStatistics(self, lines, tetrominos):
         
@@ -38,6 +39,9 @@ class statistics():
             self.ax1.grid()
             if(len(self.rateList)== 1 and self.saveCycle<=1):
                 self.rateList[0] =(self.linesList[-1]-self.linesList[-2])/(self.tetrominosList[-1]-self.tetrominosList[-2])
+                with open(self.filename[:-13]+"kerasModel.txt",'w') as fh:
+                    # Pass the file handle in as a lambda function to make it callable
+                    self.agent.Q.summary(print_fn=lambda x: fh.write(x + '\n'))
             else:
                 self.rateList = np.append(self.rateList, (self.linesList[-1]-self.linesList[-2])/(self.tetrominosList[-1]-self.tetrominosList[-2]))
                 self.ax2.plot(self.tetrominosList[0:self.rateList.shape[0]],self.rateList )
@@ -55,5 +59,6 @@ class statistics():
         data = np.transpose(np.vstack([self.linesList,self.tetrominosList,np.append(self.rateList,0)]))
         header = "Alpha:"+str(self.agent.alpha)+" Gamma:"+str(self.agent.gamma)+" Tau:"+ str(self.agent.tau)+" updateF:"+str(self.agent.updateFeq)+" gameSize:"+str(self.agent.gameSize) +"\nlines,Tetrominos,dli/dTetro"
         np.savetxt(self.filename,data,delimiter=",",header= header)
-        print("statistics saved")
+        
+        
         

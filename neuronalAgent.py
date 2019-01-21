@@ -76,6 +76,7 @@ class neuronalAgent():
         self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
         self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
         self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
+
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
         spielfeldVorher = spielfeldVorher !=0 # y Koordinaten != 0
