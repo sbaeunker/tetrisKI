@@ -20,6 +20,7 @@ if not pygame.mixer: print('Fehler pygame.mixer Modul konnte nicht geladen werde
 
 
 class Game:
+    DRAW_MODE_DELAY = 0.1
     
     FIELD_OFFSETX=30
     FIELD_OFFSETY=60
@@ -141,7 +142,7 @@ class Game:
                         self.draw()
                         #print("REW: ", reward)
                         #print("AKT: ",cin)
-                        time.sleep(0.01)
+                        time.sleep(self.DRAW_MODE_DELAY)
                     
                     self.newTetromino()
                     #time.sleep(0.2)
@@ -487,6 +488,11 @@ class Game:
                 return -1 # falls actionIndex zu groß zu weit gedreht
                 print("ActionIndex zu groß. Alles Falsch")
             tetromino.rotate(-1)
+            if(self.drawingMode):
+                self.fillBackground() 
+                self.fillOldPosition()
+                self.draw()
+                time.sleep(self.DRAW_MODE_DELAY)
             positions = np.array(tetromino.getPositions());
             positions[:][0] = positions[:][0] - min(positions[:][0])
             positions[:][1] = positions[:][1] - min(positions[:][1])
@@ -494,23 +500,41 @@ class Game:
             possibilities = spielfeld.shape[0]-max(positions[:][0])
             
         #alle Rotationen zuEnde jetzt ist actionindex die x verschiebung
-         
-        y= spielfeld[np.unique(positions[:][0] + actionIndex )][:]!=0 # y Koordinaten != 0
-        contour = np.zeros((y.shape[0],1), dtype=int) 
-        for col in range(y.shape[0]): # maximal 4 loops
-            #check if row is empty
-            if np.where(y[:][col])[:][0].size == 0: # reiheinfolge der shape richtig ??????? TODO Stefan
-                contour[col][0] = 0
-            else:
-                contour[col][0] = self.GAME_HEIGHT - min(np.where(y[:][col])[:][0])
-            #print(  positions[1][np.where( positions[:][0] == col)[:][0]]  )
-            contour[col][0] += max(positions[1][np.where( positions[:][0] == col)[:][0]]) #- min(positions[1][np.where( positions[:][0] == col)[:][0]]) # unterste steine welche aufliegen werden
         
-        #print(max(contour))
-        #print(positions)
-        positions[:][0] = positions[:][0] + actionIndex     #  abschließende x Koordinaten
-        positions[:][1] = positions[:][1] + self.GAME_HEIGHT - max(contour) - 1 # abschließende auflage höhe.
-        for i in range(4):
-            self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
+        if(self.drawingMode):
+            while(actionIndex != tetromino.getPosX()):               
+                if(actionIndex<tetromino.getPosX()):
+                    tetromino.moveLeft()                   
+                else:
+                    tetromino.moveRight()
+                self.fillBackground() 
+                self.fillOldPosition()
+                self.draw()
+                time.sleep(self.DRAW_MODE_DELAY)
+            while(self.tetrominoDrop()):
+                self.tetromino.moveDown()
+                self.fillBackground() 
+                self.fillOldPosition()
+                self.draw()
+                time.sleep(self.DRAW_MODE_DELAY)
+        else:
+            y= spielfeld[np.unique(positions[:][0] + actionIndex )][:]!=0 # y Koordinaten != 0
+            contour = np.zeros((y.shape[0],1), dtype=int) 
+            for col in range(y.shape[0]): # maximal 4 loops
+                #check if row is empty
+                if np.where(y[:][col])[:][0].size == 0: # 
+                    contour[col][0] = 0
+                else:
+                    contour[col][0] = self.GAME_HEIGHT - min(np.where(y[:][col])[:][0])
+                #print(  positions[1][np.where( positions[:][0] == col)[:][0]]  )
+                contour[col][0] += max(positions[1][np.where( positions[:][0] == col)[:][0]]) #- min(positions[1][np.where( positions[:][0] == col)[:][0]]) # unterste steine welche aufliegen werden
+        
+        
+
+        
+            positions[:][0] = positions[:][0] + actionIndex     #  abschließende x Koordinaten
+            positions[:][1] = positions[:][1] + self.GAME_HEIGHT - max(contour) - 1 # abschließende auflage höhe.
+            for i in range(4):
+                self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
         
         return spielfeld

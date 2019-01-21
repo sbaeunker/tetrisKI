@@ -56,20 +56,20 @@ class neuronalAgent():
         np.savetxt("data.csv",data,delimiter=",",header= header)
     
     def loadNetwork(self, filename):
-        try:
-            load_model(filename)
-        except:
-            print("no neuronal network file found")
-        data = np.loadtxt("data.csv",delimiter=",",skiprows=1)
-        self.memoryCounter = data.shape[0]-1
-        self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
-        self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
-        self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
-        
+        #try:
+        del self.Q
+        self.Q = load_model(filename)
+        #except:
+        #print("no neuronal network file found")
+        #data = np.loadtxt("data.csv",delimiter=",",skiprows=1)
+        #self.memoryCounter = data.shape[0]-1
+        #self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
+        #self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
+        #self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
+        print("Netz geladen")
         self.initPhase = False
-        self._initQ()
-        self._updateQ()
-        print(self.memoryActions.shape[0])
+        #self._initQ()
+        #self._updateQ()
         
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
