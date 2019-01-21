@@ -55,8 +55,8 @@ class Game:
         #self.tetrisAgent = tetrisAgent.tetrisAgent( 3, self.TETROMINO_AMOUNT, self.GAME_WIDTH, 18, alpha=0.5, gamma=0.7, vareps=0.1)
         self.agent = neuronalAgent.neuronalAgent()
         #self.trackingAgent = neuronalAgent.neuronalAgent() eventuel hier Daten aufnehmen
-        self.statistics = stats.statistics()
-        self.plotInterval = 200
+        self.statistics = stats.statistics(self.agent)
+        self.plotInterval = 500
         self.drawingMode = 1
         self.mode = mode
         self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
@@ -126,7 +126,7 @@ class Game:
                     status = np.append(contourBefore,self.tetromino.kind)
                     cin = self.agent.learn(status)
                     self.spielfeld = self.__applyAction(self.spielfeld, self.tetromino ,int(float(cin)))
-                    deletedLines = self.isLineCompleted(np.array(range(18)))
+                    deletedLines = self.isLineCompleted(np.array(range(self.GAME_HEIGHT)))
                     
                     #contourAfter = self.getGamepadOutline(3)                   
                     #reward = self.tetrisAgent.getReward(deletedLines, contourBefore, contourAfter)
