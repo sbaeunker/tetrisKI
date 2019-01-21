@@ -44,6 +44,7 @@ class neuronalAgent():
     def saveNetwork(self, filename):
         self.Q.save(filename + ".model.h5")
         self.Q.save_weights(filename + '.weights.h5')
+        print("Neuronal Network saved")
     
     def saveData( self, filename, size):
         if size == None:
@@ -56,6 +57,7 @@ class neuronalAgent():
             header+= "states" + str(i) +","
         header+="Action,Reward"
         np.savetxt(filename+".csv",data,delimiter=",",header= header)
+        print("Data saved")
     
     def loadNetwork(self, filename):
         try:
@@ -69,6 +71,7 @@ class neuronalAgent():
             self.Q.load_weights(filename+".weights.h5")
         except:
             print("ERROR: no neuronal network file found!")
+        print("Neuronal Network loaded")
 
     def loadData(self, filename):
         data = np.loadtxt(filename+".csv",delimiter=",",skiprows=1)
@@ -76,6 +79,7 @@ class neuronalAgent():
         self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
         self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
         self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
+        print("Data loaded")
 
     
     def calcReward(self, deletedLines, spielfeldVorher, spielfeldNachher):       
