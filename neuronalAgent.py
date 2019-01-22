@@ -5,6 +5,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import l2
 from keras.models import load_model
+import os
 
 class neuronalAgent():
 
@@ -17,6 +18,10 @@ class neuronalAgent():
         # Gewicht, wie stark zukünfige Belohnungen gewichtet werden
         # [0,1); 0=> Nur der direkte Reward zählt; gegen 1 => nahezu alle zukünfigen Rewards werden berücksichtigt
         self.gamma = gamma
+        #use cpu is faster with smaller neuronal network
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
+        
         
         self.tau = tau
         self.memoryMax = memoryMax
@@ -120,17 +125,18 @@ class neuronalAgent():
         #print("holes",holesDiff)
         #print("heightdiff",heightDiff)
         self.rewards[self.memoryCounter]  = -1
-        self.rewards[self.memoryCounter] += deletedLines*150
+        self.rewards[self.memoryCounter] += deletedLines*0
         self.rewards[self.memoryCounter]  -= 50 * holesDiff
         if(holesDiff == 0):
             self.rewards[self.memoryCounter] += 100
         # nicht für löcher bestrafen da diese nicht immer sichtbar sind
         if(heightDiff > 0):#kleine Strafe bei größerer höhe
-            self.rewards[self.memoryCounter] -=(max(contourVorher[:])[0]- min(contourVorher[:])[0])*heightDiff #soll türmchen verhindern
+            self.rewards[self.memoryCounter] -=5*max(contourNachher[:])[0]*heightDiff #soll türmchen verhindern
         else: #Belohnung gleicher höhe // kleinere höhe nur beim löschen der Line möglich
             self.rewards[self.memoryCounter] += 50  
         
         #print(self.rewards[self.memoryCounter])
+
         
     def _initQ(self):
         # np.hstack: Stack arrays in sequence horizontally (column wise)

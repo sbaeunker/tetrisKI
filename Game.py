@@ -304,26 +304,27 @@ class Game:
                            
         
     def tetrominoMerge(self):
-        spielfeldVorher = np.zeros_like(self.spielfeld);
-        spielfeldVorher[:,:] = self.spielfeld
-        
-        deletedLines =0
-        positions = self.tetromino.getPositions()
-        for i in range(4):
-            self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
-        deletedLines = self.isLineCompleted(np.unique(positions[1]))
-        self.fillBackground() 
-        
-        contourBefore = self.getGamepadOutline(3)
-                 
-        status = np.append(contourBefore,self.tetromino.kind)
-        self.agent.memoryCounter +=1
-        self.agent.memoryStates[self.agent.memoryCounter,:] = status
-        self.agent.memoryActions[self.agent.memoryCounter] = self.actionPosition + self.tetromino.getPosX()
-        self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
-        self.moveDown(15)
-        #print(self.actionPosition, self.tetromino.getPosX(), self.actionPosition + self.tetromino.getPosX())
-        #self.__applyAction(self.spielfeld, Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor) , self.actionPosition + self.tetromino.getPosX())
+        if(not self.drawingMode):
+            spielfeldVorher = np.zeros_like(self.spielfeld);
+            spielfeldVorher[:,:] = self.spielfeld
+            
+            deletedLines =0
+            positions = self.tetromino.getPositions()
+            for i in range(4):
+                self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
+            deletedLines = self.isLineCompleted(np.unique(positions[1]))
+            self.fillBackground() 
+            
+            contourBefore = self.getGamepadOutline(3)
+                     
+            status = np.append(contourBefore,self.tetromino.kind)
+            self.agent.memoryCounter +=1
+            self.agent.memoryStates[self.agent.memoryCounter,:] = status
+            self.agent.memoryActions[self.agent.memoryCounter] = self.actionPosition + self.tetromino.getPosX()
+            self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
+            self.moveDown(15)
+            #print(self.actionPosition, self.tetromino.getPosX(), self.actionPosition + self.tetromino.getPosX())
+            #self.__applyAction(self.spielfeld, Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor) , self.actionPosition + self.tetromino.getPosX())
                 
     def isLineCompleted(self,newLineElements):
         #nur reihen mit neuen bloecken ueberpruefen
