@@ -304,14 +304,14 @@ class Game:
                            
         
     def tetrominoMerge(self):
-        if(not self.drawingMode):
-            spielfeldVorher = np.zeros_like(self.spielfeld);
-            spielfeldVorher[:,:] = self.spielfeld
+        spielfeldVorher = np.zeros_like(self.spielfeld);
+        spielfeldVorher[:,:] = self.spielfeld
             
-            deletedLines =0
-            positions = self.tetromino.getPositions()
-            for i in range(4):
-                self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
+        deletedLines =0
+        positions = self.tetromino.getPositions()
+        for i in range(4):
+            self.spielfeld[positions[0][i]][positions[1][i]] = self.tetromino.kind 
+        if(not self.mode == 2):
             deletedLines = self.isLineCompleted(np.unique(positions[1]))
             self.fillBackground() 
             
