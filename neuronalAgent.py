@@ -128,7 +128,7 @@ class neuronalAgent():
         #print("holes",holesDiff)
         #print("heightdiff",heightDiff)
         self.rewards[self.memoryCounter]  = -1
-        self.rewards[self.memoryCounter] += deletedLines*250
+        self.rewards[self.memoryCounter] += deletedLines*150
         self.rewards[self.memoryCounter]  -= 50 * holesDiff
         if(holesDiff == 0):
             self.rewards[self.memoryCounter] += 100
@@ -159,7 +159,7 @@ class neuronalAgent():
     
     def _updateQ(self):
         learnSet = np.arange(0,self.memoryCounter-1)
-        index1 = np.flatnonzero(self.rewards[learnSet]<-0.9)    #   Suche alle Rewards kleiner als konst. Wert; neuster Reward wird nicht beachtet
+        index1 = np.flatnonzero(self.rewards[learnSet]<0.9*min(self.rewards[learnSet])|self.rewards[learnSet] >0.9* max(self.rewards[learnSet]))    #   Suche alle Rewards kleiner als konst. Wert; neuster Reward wird nicht beachtet
         #Überprüfe ob zu viele Werte für den miniBatch vorliegen. Wenn ja suche zufällig welche raus
         if index1.shape[0] > self.badMemory:             
             index = np.random.choice(index1.shape[0], self.badMemory, replace=False)
