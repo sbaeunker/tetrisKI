@@ -4,14 +4,14 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import l2
-from keras.models import load_model
+#from keras.models import load_model
 import os
 
 class neuronalAgent():
 
     #Konstruktor der Klasse
     #Initialisiert alle Arrays und sonstigne Dinge die benötigt werden
-    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.3, gamma=0.5, updateFeq=500, badMemory = 3000, gameSize = 6):
+    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.3, gamma=0.2, updateFeq=500, badMemory = 3000, gameSize = 6):
         # Gewicht, wie stark die alte Q-Aproximation bei der weitern Annäherung berücksichtigt wird (bestimmt Änderungsrate von Aproximiertem Q)
         # [0,1]; 0=> Nur der alte Wert gilt (vollkommen sinnlos); 1=> nur die neuberechnete Aproximation wird berücksichtigt
         self.alpha = alpha
@@ -19,10 +19,11 @@ class neuronalAgent():
         # [0,1); 0=> Nur der direkte Reward zählt; gegen 1 => nahezu alle zukünfigen Rewards werden berücksichtigt
         self.gamma = gamma
         #use cpu is faster with smaller neuronal network
-        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
         
-        
+        self.stopLearning = False
+        self.overwriteMemory = False
         self.tau = tau
         self.memoryMax = memoryMax
         self.updateFeq = updateFeq
@@ -35,7 +36,7 @@ class neuronalAgent():
         # In der ersten Phase ist die Q-Funktion noch BLA und daher gibt es eine initPhase in der die Aktionen vorgeschrieben werden
         self.initPhase = True
         self.gameSize = gameSize
-        self.initMemory(gameSize)
+        self.initMemory(gameSize) #gameSize -1 für Kontur und +1 für Tetromino kind
 
     #Initialisiert die Speicherwert/Gedächniswerte
     def initMemory(self, number):
@@ -77,6 +78,8 @@ class neuronalAgent():
         except:
             print("ERROR: no neuronal network file found!")
         print("Neuronal Network loaded")
+        self.stopLearning = True # wenn nur die Gewichte geladen werden soll der Agent nicht weiter lernen
+        
 
     def loadData(self, filename):
         data = np.loadtxt(filename+".csv",delimiter=",",skiprows=1)
@@ -125,7 +128,7 @@ class neuronalAgent():
         #print("holes",holesDiff)
         #print("heightdiff",heightDiff)
         self.rewards[self.memoryCounter]  = -1
-        self.rewards[self.memoryCounter] += deletedLines*0
+        self.rewards[self.memoryCounter] += deletedLines*250
         self.rewards[self.memoryCounter]  -= 50 * holesDiff
         if(holesDiff == 0):
             self.rewards[self.memoryCounter] += 100
@@ -186,17 +189,33 @@ class neuronalAgent():
         return np.exp(qA/self.tau) / np.sum(np.exp(qA/self.tau))
     
     def chooseAction(self,qA):
-        toChoose = np.arange(0,len(qA))
-        pW = self._softmax(qA)
-        if np.any(np.isnan(pW)) or np.any(np.isinf(pW)):
-            choosenA = np.random.randint(0,len(qA))
+        if(self.stopLearning):
+            return np.argmax(qA) # einfach die beste Option auswählen
         else:
-            choosenA = np.random.choice(toChoose, replace=False, p=pW)
-        return(choosenA)
+            toChoose = np.arange(0,len(qA))
+            pW = self._softmax(qA)
+            if np.any(np.isnan(pW)) or np.any(np.isinf(pW)):
+                choosenA = np.random.randint(0,len(qA))
+            else:
+                choosenA = np.random.choice(toChoose, replace=False, p=pW) # p = Wahrscheinlichkeiten für jeden eintrag
+            return(choosenA)
+
+
+    def purgeNextMemory(self):
+        self.memoryStates[self.memoryCounter:(self.memoryCounter+500),:] = np.inf*np.ones((500, self.memoryStates.shape[1]))
+        self.memoryActions[self.memoryCounter:(self.memoryCounter+500)] = np.inf*np.ones(500)
+        self.rewards[self.memoryCounter:(self.memoryCounter+500)] = np.zeros(500)
 
     def learn(self,status):
+        
         self.memoryCounter +=1
-        if self.memoryCounter%self.updateFeq == 0 and not self.initPhase:
+        if not self.memoryCounter <= self.memoryMax-1:
+            self.memoryCounter = 1
+            self.overwriteMemory = True
+            self.purgeNextMemory()
+        if self.memoryCounter%self.updateFeq == 0 and not self.initPhase and not self.stopLearning:          
+            if self.overwriteMemory == True: # empty next 500 
+                self.purgeNextMemory()
             self._updateQ()
         if self.memoryCounter > min(500,self.memoryMax-1) and self.initPhase:
             self.initPhase = False
