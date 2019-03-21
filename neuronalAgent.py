@@ -169,6 +169,7 @@ class neuronalAgent():
         self.Q.fit(xTrain, self.alpha*self.rewards[0:xTrain.shape[0]], epochs=50, callbacks=clist, batch_size=5, verbose=False)
     
     def _updateQ(self):
+
         if not self.overwriteMemory:
             learnSet = np.arange(0,self.memoryCounter-1)
         else:
@@ -178,8 +179,7 @@ class neuronalAgent():
         #index1 = np.array(nlargest(int(self.badMemory/2),range(len(self.rewards[learnSet])),self.rewards.take))
         #index3 = np.array(nlargest(int(self.badMemory/2),range(len(self.rewards[learnSet])),(-1*self.rewards).take))
         
-        #print(index1.shape[0])
-        
+
         #Überprüfe ob zu viele Werte für den miniBatch vorliegen. Wenn ja suche zufällig welche raus
         if index1.shape[0] > self.badMemory:             
             index = np.random.choice(index1.shape[0], self.badMemory, replace=False)
