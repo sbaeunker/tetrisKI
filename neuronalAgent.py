@@ -4,6 +4,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import l2
+from heapq import nlargest
 #from keras.models import load_model
 import os
 
@@ -11,7 +12,7 @@ class neuronalAgent():
 
     #Konstruktor der Klasse
     #Initialisiert alle Arrays und sonstigne Dinge die benötigt werden
-    def __init__(self, tau=1, actionAmount=18, memoryMax=1000000, alpha=0.3, gamma=0.2, updateFeq=500, badMemory = 3000, gameSize = 6):
+    def __init__(self, gameSize = 6, tau=5, memoryMax=1000000, alpha=0.3, gamma=0.8, updateFeq=500, badMemory = 5000):
         # Gewicht, wie stark die alte Q-Aproximation bei der weitern Annäherung berücksichtigt wird (bestimmt Änderungsrate von Aproximiertem Q)
         # [0,1]; 0=> Nur der alte Wert gilt (vollkommen sinnlos); 1=> nur die neuberechnete Aproximation wird berücksichtigt
         self.alpha = alpha
@@ -28,15 +29,15 @@ class neuronalAgent():
         self.memoryMax = memoryMax
         self.updateFeq = updateFeq
         self.badMemory = badMemory
-        self.actionAmount = actionAmount
+        self.actionAmount = 4*gameSize -6
         # Liste aller möglichen Aktionen
-        self.a = np.array(range(0,actionAmount))
+        self.a = np.array(range(0,self.actionAmount))
         # Counter und aktueller Gedächnisindex für Gedächnisarrays (siehe initMemory)
         self.memoryCounter = -1         # Zählvariable für die Speicherwerte/das Gedächnis
         # In der ersten Phase ist die Q-Funktion noch BLA und daher gibt es eine initPhase in der die Aktionen vorgeschrieben werden
         self.initPhase = True
         self.gameSize = gameSize
-        self.initMemory(gameSize) #gameSize -1 für Kontur und +1 für Tetromino kind
+        self.initMemory(gameSize+1) #gameSize -1 für Kontur und +1 für Tetromino kind =0 
 
     #Initialisiert die Speicherwert/Gedächniswerte
     def initMemory(self, number):
@@ -71,21 +72,31 @@ class neuronalAgent():
             
         except:
             print("INFO: Neuronalnet is not initialisized")
-            
-        self._initQ()
+        self.Q = Sequential()
+
+        self.Q.add(Dense(256, input_dim=self.gameSize+2, activation='relu', kernel_regularizer=l2(0.0001)))
+        self.Q.add(Dense(128, activation='relu', kernel_regularizer=l2(0.0001)))
+        self.Q.add(Dense(64, activation='relu', kernel_regularizer=l2(0.0001)))
+        self.Q.add(Dense(1, activation='linear'))
+
+        clist = [keras.callbacks.EarlyStopping(monitor='loss',patience=5,verbose=0,mode='auto')]
+
+        self.Q.compile(loss ='mean_squared_error', optimizer='adam')
+        self.initPhase = False
+        #self._initQ()        
         try:
             self.Q.load_weights(filename+".weights.h5")
         except:
             print("ERROR: no neuronal network file found!")
+        #self._updateQ()
         print("Neuronal Network loaded")
-        self.stopLearning = True # wenn nur die Gewichte geladen werden soll der Agent nicht weiter lernen
         
 
     def loadData(self, filename):
         data = np.loadtxt(filename+".csv",delimiter=",",skiprows=1)
         self.memoryCounter = data.shape[0]-1
-        self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,6])       
-        self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize]
+        self.memoryActions[0:self.memoryCounter+1] = np.transpose(data[:,7])       
+        self.memoryStates[0:self.memoryCounter+1,:] = data[:,0:self.gameSize+1]
         self.rewards[0:self.memoryCounter+1] = np.transpose(data[:,7])
         print("Data loaded")
 
@@ -144,7 +155,7 @@ class neuronalAgent():
     def _initQ(self):
         # np.hstack: Stack arrays in sequence horizontally (column wise)
         # Legt das Wertetupel (Status, Aktion) an
-        xTrain = np.hstack( (self.memoryStates[0:self.memoryCounter,:],self.memoryActions[0:self.memoryCounter,None]) )
+        xTrain = np.hstack( (self.memoryStates[max(self.memoryCounter-self.updateFeq,0):self.memoryCounter,:],self.memoryActions[max(self.memoryCounter-self.updateFeq,0):self.memoryCounter,None]) )
         self.Q = Sequential()
 
         self.Q.add(Dense(256, input_dim=xTrain.shape[1], activation='relu', kernel_regularizer=l2(0.0001)))
@@ -158,14 +169,26 @@ class neuronalAgent():
         self.Q.fit(xTrain, self.alpha*self.rewards[0:xTrain.shape[0]], epochs=50, callbacks=clist, batch_size=5, verbose=False)
     
     def _updateQ(self):
-        learnSet = np.arange(0,self.memoryCounter-1)
-        index1 = np.flatnonzero(np.logical_or(self.rewards[learnSet]<0.9*min(self.rewards[learnSet]) , self.rewards[learnSet] > 0.9* max(self.rewards[learnSet])))    #   Suche alle Rewards kleiner als konst. Wert; neuster Reward wird nicht beachtet
+        if not self.overwriteMemory:
+            learnSet = np.arange(0,self.memoryCounter-1)
+        else:
+            learnSet = np.arange(0,self.memoryMax-1)
+        index1 = np.flatnonzero(np.logical_or(self.rewards[learnSet]<0.5*min(self.rewards[learnSet]) , self.rewards[learnSet] > 0.5* max(self.rewards[learnSet])))    #   Suche alle Rewards kleiner als konst. Wert; neuster Reward wird nicht beachtet
+        #index1 = np.flatnonzero(self.rewards[learnSet]<-0.9)
+        #index1 = np.array(nlargest(int(self.badMemory/2),range(len(self.rewards[learnSet])),self.rewards.take))
+        #index3 = np.array(nlargest(int(self.badMemory/2),range(len(self.rewards[learnSet])),(-1*self.rewards).take))
+        
+        #print(index1.shape[0])
+        
         #Überprüfe ob zu viele Werte für den miniBatch vorliegen. Wenn ja suche zufällig welche raus
         if index1.shape[0] > self.badMemory:             
             index = np.random.choice(index1.shape[0], self.badMemory, replace=False)
             index1 = index1[index]
         #Nimm noch mehr Werte für den Batch dazu
-        samplesleft = min(index1.shape[0]*5,self.memoryCounter-index1.shape[0]-1)
+        index3=np.arange(self.memoryCounter-500,self.memoryCounter-1)
+        index1 = np.hstack( (index1, index3) )
+        #samplesleft = min(int(index1.shape[0]/5),self.memoryCounter-index1.shape[0]-1)
+        samplesleft = min(int(index1.shape[0]*3),self.memoryCounter-index1.shape[0]-1)
         index2 = np.random.choice(self.memoryCounter-1, samplesleft, replace=False)
         #Beide Wertearrays zusammenhängen
         learnSet = np.hstack( (index1[None,:], index2[None,:]) )
@@ -213,10 +236,13 @@ class neuronalAgent():
             self.memoryCounter = 1
             self.overwriteMemory = True
             self.purgeNextMemory()
-        if self.memoryCounter%self.updateFeq == 0 and not self.initPhase and not self.stopLearning:          
+        if self.memoryCounter%self.updateFeq == 0 and not self.initPhase and not self.stopLearning:
+            self._updateQ()       
             if self.overwriteMemory == True: # empty next 500 
-                self.purgeNextMemory()
-            self._updateQ()
+                self.purgeNextMemory() 
+            if self.memoryCounter % 200000 == 0:
+                self.saveNetwork("step")
+                self.saveData("gameData",self.memoryCounter-1)
         if self.memoryCounter > min(500,self.memoryMax-1) and self.initPhase:
             self.initPhase = False
             self._initQ()
@@ -233,10 +259,14 @@ class neuronalAgent():
             j = self.memoryStates[self.memoryCounter,:].shape[0]
             x = np.zeros( (1, j+1) )
             x[0,0:j] = self.memoryStates[self.memoryCounter,:]
-
-            for i in range(len(self.a)):
-                x[0,self.memoryStates[self.memoryCounter,:].shape[0]] = self.a[i]
-                qA[i] = self.Q.predict(x)[0]
+            try:
+                for i in range(len(self.a)):
+                    x[0,self.memoryStates[self.memoryCounter,:].shape[0]] = self.a[i]
+                    qA[i] = self.Q.predict(x)[0,0]
+            except:
+                self.saveNetwork("error")
+                self.saveData("gameData",self.memoryCounter-1)
+                print("Network Predicted Invalid Q Function while learning");
             ca = self.chooseAction(qA)
             w = self.a[ca]
 

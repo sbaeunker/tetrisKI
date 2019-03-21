@@ -45,7 +45,7 @@ class Game:
     GAME_ROTATETICK = 14 # Wie oft Spieler Inputs ausgewertet werden
     GAME_MOVETICK = 9
     
-    GAME_WIDTH = 6
+    GAME_WIDTH = 10
     GAME_HEIGHT = 22
     
     TETROMINO_AMOUNT = 1
@@ -54,7 +54,7 @@ class Game:
     def __init__(self, screenHeight, screenWidth, mode):
         
         #self.tetrisAgent = tetrisAgent.tetrisAgent( 3, self.TETROMINO_AMOUNT, self.GAME_WIDTH, 18, alpha=0.5, gamma=0.7, vareps=0.1)
-        self.agent = neuronalAgent.neuronalAgent()
+        self.agent = neuronalAgent.neuronalAgent(self.GAME_WIDTH)
         #self.trackingAgent = neuronalAgent.neuronalAgent() eventuel hier Daten aufnehmen
         self.statistics = stats.statistics(self.agent)
         self.plotInterval = 500
@@ -70,6 +70,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((screenHeight, screenWidth))
         self.tetrominoCount = 0
+        self.gameCount =0
         #bestimmte events erlauben fuer performance
         #pygame.event.set_allowed([pygame.QUIT, pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE])
         
@@ -96,7 +97,8 @@ class Game:
     
         self.tetrominoKind = None#6
         self.tetrominoColor = None
-
+        self.upcomingTetrominoList= np.arange(1,8)
+        self.upcomingTetrominoKind= 0
         # Erzeugt ein zufälliges Tetromino (tetrominoKind = None) mit der Farbe 1 (tetrominoColor = 1)
         self.upcomingTetromino = Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
         self.newTetromino()
@@ -125,6 +127,7 @@ class Game:
                     spielfeldVorher[:,:] = self.spielfeld
                     #cin = self.tetrisAgent.chooseAction(self.getGamepadOutline(3), self.tetromino.kind)
                     status = np.append(contourBefore,self.tetromino.kind)
+                    status = np.append(status,self.upcomingTetromino.kind)
                     cin = self.agent.learn(status)
                     self.spielfeld = self.__applyAction(self.spielfeld, self.tetromino ,int(float(cin)))
                     deletedLines = self.isLineCompleted(np.array(range(self.GAME_HEIGHT)))
@@ -134,7 +137,7 @@ class Game:
                     self.agent.calcReward(deletedLines, spielfeldVorher , self.spielfeld)
                     #self.tetrisAgent.learn(contourBefore,contourAfter, reward, cin, self.tetromino.kind)
                     
-                    self.moveDown(15)
+                    self.moveDown(19)
                     
                     if(self.drawingMode):
                         self.fillBackground() 
@@ -252,10 +255,14 @@ class Game:
                                 self.agent.saveNetwork("neuronalNetwork") #speichert im KI modus netz mit ab
                                 self.agent.saveData("gameData", self.tetrominoCount-1)
                             elif event.key == pygame.K_l:
+                                #self.agent.loadData("gameData")
+                                self.agent.stopLearning = True
                                 self.agent.loadNetwork("neuronalNetwork")
+                                
                             elif event.key == pygame.K_i:
-                                self.agent.loadNetwork("neuronalNetwork")
                                 self.agent.loadData("gameData")
+                                self.agent.loadNetwork("neuronalNetwork")
+                                
                                 
     def drawField(self):
         shape = np.shape(self.spielfeld)
@@ -351,9 +358,11 @@ class Game:
                 contour[col][0] = self.GAME_HEIGHT - min(np.where(y[:][col])[:][0])
                 
         if(max(contour)[0]>top):
-            self.spielfeld = np.delete(self.spielfeld, range(self.GAME_HEIGHT-4,self.GAME_HEIGHT), axis = 1) # reihe loeschen
-            emptyRow=np.zeros((self.GAME_WIDTH,4), dtype=int)
-            self.spielfeld = np.hstack((emptyRow,self.spielfeld)) #oben neue leere Reihe
+            self.spielfeld=  np.zeros((self.GAME_WIDTH, self.GAME_HEIGHT), dtype=int)
+            self.gameCount+= 1
+            #self.spielfeld = np.delete(self.spielfeld, range(self.GAME_HEIGHT-4,self.GAME_HEIGHT), axis = 1) # reihe loeschen
+            #emptyRow=np.zeros((self.GAME_WIDTH,4), dtype=int)
+            #self.spielfeld = np.hstack((emptyRow,self.spielfeld)) #oben neue leere Reihe
     
     def draw(self):
         #only Draw Changed
@@ -363,8 +372,8 @@ class Game:
         # render text
         labelReihen = self.FONT_MAIN.render("Reihen: "+str(self.reihen), 1, (255,255,0))
         labelTetrominos = self.FONT_MAIN.render("Tetrominos: "+str(self.tetrominoCount), 1, (255,255,0))
-        self.screen.blit(labelReihen, (200, 40))
-        self.screen.blit(labelTetrominos, (200, 60))   
+        self.screen.blit(labelReihen, (150+20*self.GAME_WIDTH, 40))
+        self.screen.blit(labelTetrominos, (150+20*self.GAME_WIDTH, 60))   
         self.drawTetromino(self.tetromino)
         self.drawTetromino(self.upcomingTetromino)
         self.drawField()
@@ -414,10 +423,14 @@ class Game:
         self.actionPosition = 0 # starting x Position
         self.rotations = 0
         self.checkLose()
-        self.upcomingTetromino= Tetromino.Tetromino(self.tetrominoKind,self.tetrominoColor)
+        self.upcomingTetromino= Tetromino.Tetromino(self.upcomingTetrominoList[self.upcomingTetrominoKind],self.tetrominoColor)
         self.tetrominoCount+=1
+        self.upcomingTetrominoKind+=1
+        if(self.upcomingTetrominoKind > 6 ):
+            self.upcomingTetrominoKind = 0
+            np.random.shuffle(self.upcomingTetrominoList)
         if(self.tetrominoCount % self.plotInterval == 0):
-            self.statistics.plotStatistics(self.reihen,self.tetrominoCount);
+            self.statistics.plotStatistics(self.reihen,self.tetrominoCount,self.gameCount);
     
         
         
